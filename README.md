@@ -169,6 +169,31 @@ Rekap: detail sesi → **Unduh CSV**.
 | `/admin/jadwal` | kelola jadwal latihan yang tampil di beranda & API Blogger |
 | `/api/public/jadwal` | JSON jadwal untuk situs luar (CORS aktif) |
 
+## Preview saat di-share (Open Graph)
+
+Tag Open Graph & Twitter Card sudah terpasang di `src/app/layout.tsx`, dengan gambar preview `public/og.png` (1200×630). Saat link ditempel di WhatsApp, Telegram, Facebook, X, atau LinkedIn, muncul kartu berisi logo, nama, dan tagline.
+
+Satu env yang perlu diisi supaya URL gambarnya absolut dan benar:
+
+```
+NEXT_PUBLIC_SITE_URL=https://bangkalan-mss.vercel.app
+```
+
+Ganti kalau nanti pindah ke domain sendiri, lalu redeploy.
+
+Mau ganti gambar previewnya? Timpa `public/og.png` dengan gambar 1200×630 (di bawah 300 KB supaya WhatsApp mau menampilkannya).
+
+Setelah deploy, cache preview di tiap platform perlu di-refresh sekali:
+
+| Platform | Cara refresh |
+|---|---|
+| Facebook / Instagram | [Sharing Debugger](https://developers.facebook.com/tools/debug/) → tempel URL → **Scrape Again** |
+| X (Twitter) | [Card Validator](https://cards-dev.twitter.com/validator) |
+| LinkedIn | [Post Inspector](https://www.linkedin.com/post-inspector/) |
+| WhatsApp / Telegram | cache kedaluwarsa sendiri; untuk paksa refresh, kirim URL dengan `?v=2` di belakangnya |
+
+Halaman admin, presensi, dan kartu anggota diberi `noindex` — hanya beranda dan `/daftar` yang masuk mesin pencari (`robots.txt` dan `sitemap.xml` dibuat otomatis).
+
 ## Kredit
 
 Footer memuat "Powered by [Qfaz Digital](https://qfazdigital.my.id)" — teksnya ada di `src/app/page.tsx` bagian `Footer()`.
