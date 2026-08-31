@@ -1,6 +1,8 @@
 # MSS Chapter Bangkalan
 
-Sistem keanggotaan + presensi latihan berbasis QR. Next.js 15 (App Router) · Firestore · deploy di Vercel.
+Situs komunitas + sistem keanggotaan & presensi latihan berbasis QR. Next.js 15 (App Router) · Firestore · deploy di Vercel.
+
+Situs publik lama (Apps Script + Blogger) sudah digabung ke sini: hero, keunggulan, media sosial, jadwal latihan, dan formulir pendaftaran dengan redirect WhatsApp admin.
 
 ## Fitur
 
@@ -10,6 +12,8 @@ Sistem keanggotaan + presensi latihan berbasis QR. Next.js 15 (App Router) · Fi
 - **Presensi QR mode B (pengurus yang scan)** — tiap anggota punya kartu QR sendiri (`/kartu/MSS-XXXXXX`, bisa dicetak). Pengurus buka scanner di HP dan memindai satu per satu. Ada juga input kode manual kalau kamera bermasalah.
 - **Anti dobel** — satu orang hanya tercatat sekali per sesi (transaksi Firestore).
 - Rekap hadir realtime + **unduh CSV** per sesi.
+- **Jadwal latihan** dikelola pengurus di `/admin/jadwal`, tampil di beranda, dan tersedia sebagai API publik untuk situs Blogger.
+- **Formulir pendaftaran** lengkap (nama, WhatsApp, pekerjaan, alasan, pilih admin koordinasi) — setelah tersimpan, pendaftar langsung diarahkan ke WhatsApp admin pilihannya.
 - Login hanya untuk pengurus (Firebase Auth email + password, dibatasi daftar email di env). Anggota tidak perlu punya akun.
 
 ## Branding
@@ -24,12 +28,55 @@ Logo dipakai di tiga tempat sekaligus:
 
 File yang kamu kirim beresolusi 150×150. Kalau ada versi yang lebih besar (mis. 512×512), timpa saja ketiga file itu — tidak ada kode yang perlu diubah, dan hasil cetak kartu akan lebih tajam.
 
+## Menyambungkan situs Blogger
+
+Endpoint publik sudah ber-CORS dan formatnya sengaja **dibuat sama persis dengan Apps Script lama**, jadi kode Blogger yang ada cukup diubah URL-nya.
+
+| Endpoint | Ganti apa di Blogger |
+|---|---|
+| `GET  https://<domain>/api/public/jadwal` | pengganti `...exec?action=getJadwal` |
+| `POST https://<domain>/api/public/daftar` | pengganti `POST ...exec` |
+
+Di `<script>` Blogger, ganti bagian ini:
+
+```js
+// LAMA
+var BLOGGER_WEB_APP_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+fetch(BLOGGER_WEB_APP_URL + "?action=getJadwal")
+fetch(BLOGGER_WEB_APP_URL, { method: "POST", body: JSON.stringify(formData) })
+
+// BARU
+var API_BASE = "https://mss-chapter-bangkalan.vercel.app";
+fetch(API_BASE + "/api/public/jadwal")
+fetch(API_BASE + "/api/public/daftar", { method: "POST", body: JSON.stringify(formData) })
+```
+
+Respons jadwal tetap `[{ "Hari": ..., "Jam": ..., "Lokasi Kolam": ..., "Status": ... }]`, dan endpoint daftar tetap menerima `{nama, whatsapp, pekerjaan, alasan}` serta membalas `{success, message}` — jadi fungsi `renderTabelJadwal()` dan `selesaikanPendaftaran()` yang sudah ada tidak perlu disentuh.
+
+Kalau ingin membatasi siapa yang boleh memanggil API, isi env `ALLOWED_ORIGINS` dengan domain Blogger-mu (dipisah koma). Dikosongkan = terbuka untuk semua.
+
+## Migrasi data dari Google Sheet
+
+```bash
+# 1. Di Google Sheet: sheet "Pendaftar" → File → Download → CSV
+# 2. Taruh filenya di folder proyek, lalu:
+node scripts/import-pendaftar.mjs pendaftar.csv --dry   # lihat dulu hasil bacanya
+node scripts/import-pendaftar.mjs pendaftar.csv         # tulis ke Firestore
+```
+
+Semua pendaftar masuk sebagai **calon anggota** dengan kode kartu QR otomatis. Script aman dijalankan berulang — nomor WhatsApp yang sudah ada akan dilewati.
+
 ## Struktur data Firestore
 
 ```
+schedules/{id}
+  day, time, pool     // "Sabtu", "07.00 - 09.00", "Kolam Syariah Bangkalan"
+  status              "Tersedia" | "Penuh"
+  order               urutan tampil
+
 members/{id}
   code            "MSS-7F3K2Q"   // isi kartu QR, unik
-  name, phone, address, note
+  name, phone, address, job, reason, note
   status          "calon" | "member"
   attendanceCount, firstAttendedAt, lastAttendedAt, createdAt
 
@@ -87,6 +134,7 @@ Setelah itu **Project → Settings → Environment Variables**, isi semua variab
 | `SESSION_SECRET` | hasil `openssl rand -base64 32` |
 | `ADMIN_EMAILS` | email pengurus, dipisah koma |
 | `PUBLIC_REGISTRATION` | `on` / `off` |
+| `ALLOWED_ORIGINS` | domain yang boleh memanggil API publik; kosong = semua |
 
 Lalu **Redeploy**.
 
@@ -108,7 +156,7 @@ Rekap: detail sesi → **Unduh CSV**.
 
 | Rute | Untuk siapa |
 |---|---|
-| `/` | publik — beranda |
+| `/` | publik — beranda lengkap: profil, sosmed, jadwal, formulir daftar |
 | `/daftar` | publik — pendaftaran calon anggota |
 | `/a/[sesi]?t=…` | publik — presensi mandiri (hanya dari QR yang masih berlaku) |
 | `/kartu/[kode]` | kartu QR anggota, siap cetak |
@@ -118,6 +166,14 @@ Rekap: detail sesi → **Unduh CSV**.
 | `/admin/sesi/[id]` | layar QR + daftar hadir realtime + CSV |
 | `/admin/sesi/[id]/scan` | scanner kartu anggota |
 | `/admin/anggota` | kelola anggota & calon anggota |
+| `/admin/jadwal` | kelola jadwal latihan yang tampil di beranda & API Blogger |
+| `/api/public/jadwal` | JSON jadwal untuk situs luar (CORS aktif) |
+
+## Kredit
+
+Footer memuat "Powered by [Qfaz Digital](https://qfazdigital.my.id)" — teksnya ada di `src/app/page.tsx` bagian `Footer()`.
+
+Kontak admin, tautan media sosial, dan poin keunggulan diatur di satu file: `src/lib/config.ts`.
 
 ## Catatan keamanan
 

@@ -29,6 +29,8 @@ export async function POST(req: Request) {
       name,
       phone: String(body.phone ?? "").trim(),
       address: String(body.address ?? "").trim(),
+      job: String(body.job ?? "").trim(),
+      reason: String(body.reason ?? "").trim(),
       note: String(body.note ?? "").trim(),
       status: "calon" as const,
       attendanceCount: 0,

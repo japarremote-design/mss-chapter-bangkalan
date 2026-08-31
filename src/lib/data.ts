@@ -2,7 +2,14 @@ import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "./firebaseAdmin";
 import { HttpError } from "./auth";
-import type { AttendanceRecord, Member, MemberStatus, TrainingSession } from "./types";
+import type {
+  AttendanceRecord,
+  Member,
+  MemberStatus,
+  Schedule,
+  ScheduleStatus,
+  TrainingSession,
+} from "./types";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // tanpa I, O, 0, 1 biar tidak salah baca
 
@@ -34,6 +41,8 @@ export function memberFromDoc(
     name: d.name ?? "",
     phone: d.phone ?? "",
     address: d.address ?? "",
+    job: d.job ?? "",
+    reason: d.reason ?? "",
     status: (d.status as MemberStatus) ?? "calon",
     attendanceCount: d.attendanceCount ?? 0,
     firstAttendedAt: d.firstAttendedAt ?? null,
@@ -120,4 +129,24 @@ export async function recordAttendance(opts: {
 
     return { record, alreadyIn: false, promoted };
   });
+}
+
+export function scheduleFromDoc(
+  doc: FirebaseFirestore.QueryDocumentSnapshot | FirebaseFirestore.DocumentSnapshot
+): Schedule {
+  const d = doc.data() ?? {};
+  return {
+    id: doc.id,
+    day: d.day ?? "",
+    time: d.time ?? "",
+    pool: d.pool ?? "",
+    status: (d.status as ScheduleStatus) === "Penuh" ? "Penuh" : "Tersedia",
+    order: typeof d.order === "number" ? d.order : 0,
+  };
+}
+
+/** Jadwal latihan, urut sesuai kolom order. Aman dipanggil saat DB kosong. */
+export async function listSchedules(): Promise<Schedule[]> {
+  const snap = await adminDb().collection("schedules").orderBy("order").get();
+  return snap.docs.map(scheduleFromDoc);
 }

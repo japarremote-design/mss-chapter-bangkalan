@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin", label: "Dasbor" },
   { href: "/admin/sesi", label: "Sesi Latihan" },
   { href: "/admin/anggota", label: "Anggota" },
+  { href: "/admin/jadwal", label: "Jadwal" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

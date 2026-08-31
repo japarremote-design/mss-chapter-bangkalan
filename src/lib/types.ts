@@ -7,6 +7,8 @@ export type Member = {
   name: string;
   phone?: string;
   address?: string;
+  job?: string;
+  reason?: string;
   status: MemberStatus;
   attendanceCount: number;
   firstAttendedAt?: string | null;
@@ -35,4 +37,15 @@ export type AttendanceRecord = {
   status: MemberStatus;
   method: "mandiri" | "scan-kartu";
   at: string;
+};
+
+export type ScheduleStatus = "Tersedia" | "Penuh";
+
+export type Schedule = {
+  id: string;
+  day: string;
+  time: string;
+  pool: string;
+  status: ScheduleStatus;
+  order: number;
 };

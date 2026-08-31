@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError, requireAdmin } from "@/lib/auth";
-import { memberFromDoc } from "@/lib/data";
+import { scheduleFromDoc } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,16 +14,16 @@ export async function PATCH(req: Request, { params }: Ctx) {
     const body = await req.json();
 
     const patch: Record<string, unknown> = {};
-    for (const field of ["name", "phone", "address", "job", "reason", "note"] as const) {
+    for (const field of ["day", "time", "pool"] as const) {
       if (typeof body[field] === "string") patch[field] = body[field].trim();
     }
-    if (body.status === "calon" || body.status === "member") patch.status = body.status;
+    if (body.status === "Tersedia" || body.status === "Penuh") patch.status = body.status;
+    if (typeof body.order === "number") patch.order = body.order;
     if (Object.keys(patch).length === 0) throw new HttpError(400, "Tidak ada data yang diubah.");
 
-    const ref = adminDb().collection("members").doc(id);
+    const ref = adminDb().collection("schedules").doc(id);
     await ref.update(patch);
-    const snap = await ref.get();
-    return Response.json({ member: memberFromDoc(snap) });
+    return Response.json({ schedule: scheduleFromDoc(await ref.get()) });
   } catch (err) {
     return errorResponse(err);
   }
@@ -33,7 +33,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
   try {
     await requireAdmin(req);
     const { id } = await params;
-    await adminDb().collection("members").doc(id).delete();
+    await adminDb().collection("schedules").doc(id).delete();
     return Response.json({ ok: true });
   } catch (err) {
     return errorResponse(err);
