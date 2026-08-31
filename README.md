@@ -12,6 +12,18 @@ Sistem keanggotaan + presensi latihan berbasis QR. Next.js 15 (App Router) · Fi
 - Rekap hadir realtime + **unduh CSV** per sesi.
 - Login hanya untuk pengurus (Firebase Auth email + password, dibatasi daftar email di env). Anggota tidak perlu punya akun.
 
+## Branding
+
+Palet diambil dari logo MSS (biru laut `#0f6fb0`, biru tua `#12468f`, biru gelombang `#34a7dd`), didefinisikan sebagai CSS variable di `src/app/globals.css` — ubah di satu tempat, semua halaman ikut.
+
+Logo dipakai di tiga tempat sekaligus:
+
+- `public/logo.png` — tampil di beranda, header admin, layar QR, kartu anggota
+- `src/app/icon.png` — favicon tab browser
+- `src/app/apple-icon.png` — ikon saat disimpan ke home screen HP
+
+File yang kamu kirim beresolusi 150×150. Kalau ada versi yang lebih besar (mis. 512×512), timpa saja ketiga file itu — tidak ada kode yang perlu diubah, dan hasil cetak kartu akan lebih tajam.
+
 ## Struktur data Firestore
 
 ```

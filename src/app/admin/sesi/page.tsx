@@ -118,7 +118,7 @@ function Sesi() {
         </div>
       </form>
 
-      {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
+      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       <div className="panel divide-y divide-[var(--line)]">
         {sessions.map((s) => (

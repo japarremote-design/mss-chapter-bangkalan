@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdmin } from "./useAdmin";
@@ -23,8 +24,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen">
       <header className="no-print border-b border-[var(--line)] bg-[var(--panel)]">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link href="/admin" className="font-black tracking-tight">
-            MSS <span className="text-[var(--accent)]">Bangkalan</span>
+          <Link href="/admin" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="MSS" width={32} height={32} />
+            <span className="wordmark leading-tight">
+              MSS <span className="text-[var(--accent)]">Bangkalan</span>
+            </span>
           </Link>
           <nav className="flex gap-1">
             {NAV.map((item) => {
@@ -37,7 +41,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   className={`rounded-lg px-3 py-1.5 text-sm ${
                     active
                       ? "bg-[var(--accent)] font-semibold text-white"
-                      : "text-[var(--muted)] hover:text-white"
+                      : "text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--ink)]"
                   }`}
                 >
                   {item.label}

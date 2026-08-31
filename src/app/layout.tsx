@@ -3,13 +3,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MSS Chapter Bangkalan",
-  description: "Sistem keanggotaan dan presensi latihan MSS Chapter Bangkalan.",
+  description:
+    "Muslimah Swimming Squad Chapter Bangkalan — keanggotaan dan presensi latihan berbasis QR.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b0f14",
+  themeColor: "#0f6fb0",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

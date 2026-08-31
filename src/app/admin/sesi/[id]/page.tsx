@@ -66,7 +66,7 @@ function Detail() {
     URL.revokeObjectURL(url);
   }
 
-  if (error) return <p className="text-sm text-[var(--accent)]">{error}</p>;
+  if (error) return <p className="text-sm text-[var(--danger)]">{error}</p>;
   if (!data) return <p className="text-sm text-[var(--muted)]">Memuat…</p>;
 
   const { session, attendance, token } = data;
@@ -98,6 +98,8 @@ function Detail() {
 
       <div className="grid gap-5 md:grid-cols-[auto_1fr]">
         <div className="panel flex flex-col items-center p-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="MSS" width={56} height={56} className="mb-2" />
           <p className="mb-3 text-center text-sm font-semibold">Scan untuk presensi</p>
           {session.open ? (
             <>

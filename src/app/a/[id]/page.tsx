@@ -104,7 +104,7 @@ function Checkin() {
           </h1>
           <p className="mt-1 text-lg font-semibold text-[var(--accent)]">{sukses.name}</p>
           {sukses.promoted && (
-            <p className="mt-3 text-sm text-green-400">
+            <p className="mt-3 text-sm text-green-700">
               Selamat! Ini latihan pertamamu — statusmu naik jadi <b>ANGGOTA</b>.
             </p>
           )}
@@ -129,14 +129,18 @@ function Checkin() {
 
   return (
     <main className="mx-auto max-w-md px-5 py-8">
-      <div className="panel mb-4 p-4">
-        <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Presensi latihan</p>
-        <h1 className="text-lg font-bold">{session.title}</h1>
-        <p className="text-xs text-[var(--muted)]">
-          {session.date}
-          {session.startTime ? ` · ${session.startTime}` : ""}
-          {session.location ? ` · ${session.location}` : ""}
-        </p>
+      <div className="panel mb-4 flex items-center gap-3 p-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="MSS" width={44} height={44} className="shrink-0" />
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wide text-[var(--muted)]">Presensi latihan</p>
+          <h1 className="truncate text-lg font-bold">{session.title}</h1>
+          <p className="text-xs text-[var(--muted)]">
+            {session.date}
+            {session.startTime ? ` · ${session.startTime}` : ""}
+            {session.location ? ` · ${session.location}` : ""}
+          </p>
+        </div>
       </div>
 
       {!modeBaru ? (
@@ -156,7 +160,7 @@ function Checkin() {
                 <button
                   disabled={busy}
                   onClick={() => hadir({ memberId: k.id })}
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-white/5"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-[var(--accent-soft)]"
                 >
                   <span className="font-medium">{k.name}</span>
                   <span
@@ -179,7 +183,7 @@ function Checkin() {
             )}
           </ul>
 
-          {error && <p className="mt-3 text-sm text-[var(--accent)]">{error}</p>}
+          {error && <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>}
 
           <button onClick={() => setModeBaru(true)} className="btn btn-ghost mt-4 w-full">
             Belum terdaftar? Daftar sekarang
@@ -215,7 +219,7 @@ function Checkin() {
               onChange={(e) => setBaru({ ...baru, phone: e.target.value })}
             />
           </div>
-          {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
           <button disabled={busy} className="btn btn-primary w-full">
             {busy ? "Memproses…" : "Daftar & hadir"}
           </button>

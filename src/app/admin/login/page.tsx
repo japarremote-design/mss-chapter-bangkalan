@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
@@ -27,9 +28,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="wave-top flex min-h-screen items-center justify-center px-4">
       <form onSubmit={submit} className="panel w-full max-w-sm p-6">
-        <h1 className="text-xl font-black tracking-tight">
+        <Image src="/logo.png" alt="MSS" width={64} height={64} className="mb-3" />
+        <h1 className="wordmark text-xl">
           MSS <span className="text-[var(--accent)]">Bangkalan</span>
         </h1>
         <p className="mt-1 mb-5 text-sm text-[var(--muted)]">Masuk sebagai pengurus.</p>
@@ -60,7 +62,7 @@ export default function LoginPage() {
           autoComplete="current-password"
         />
 
-        {error && <p className="mb-3 text-sm text-[var(--accent)]">{error}</p>}
+        {error && <p className="mb-3 text-sm text-[var(--danger)]">{error}</p>}
 
         <button type="submit" disabled={busy} className="btn btn-primary w-full">
           {busy ? "Memproses…" : "Masuk"}

@@ -55,8 +55,12 @@ export default function DaftarPage() {
 
   return (
     <main className="mx-auto max-w-md px-5 py-10">
-      <h1 className="text-2xl font-black tracking-tight">Daftar Calon Anggota</h1>
-      <p className="mt-1 mb-6 text-sm text-[var(--muted)]">MSS Chapter Bangkalan</p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo.png" alt="MSS" width={80} height={80} className="mb-4" />
+      <h1 className="wordmark text-2xl">Daftar Calon Anggota</h1>
+      <p className="mt-1 mb-6 text-sm text-[var(--muted)]">
+        Muslimah Swimming Squad — Chapter Bangkalan
+      </p>
 
       <form onSubmit={submit} className="panel space-y-3 p-5">
         <div>
@@ -97,7 +101,7 @@ export default function DaftarPage() {
           />
         </div>
 
-        {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
+        {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
         <button disabled={busy} className="btn btn-primary w-full">
           {busy ? "Mengirim…" : "Kirim pendaftaran"}

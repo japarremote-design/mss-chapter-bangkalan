@@ -25,7 +25,9 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
   return (
     <main className="mx-auto max-w-sm px-5 py-10">
       <div className="panel p-6 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--accent)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="MSS" width={72} height={72} className="mx-auto" />
+        <p className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent)]">
           MSS Chapter Bangkalan
         </p>
         <h1 className="mt-2 text-xl font-bold">{member.name}</h1>

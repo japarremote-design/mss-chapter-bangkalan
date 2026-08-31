@@ -146,7 +146,7 @@ function Anggota() {
         />
       </div>
 
-      {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
+      {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
@@ -183,7 +183,7 @@ function Anggota() {
                   </Link>
                   <button
                     onClick={() => hapus(m)}
-                    className="ml-3 text-xs text-[var(--muted)] hover:text-white"
+                    className="ml-3 text-xs text-[var(--muted)] hover:text-[var(--danger)]"
                   >
                     Hapus
                   </button>

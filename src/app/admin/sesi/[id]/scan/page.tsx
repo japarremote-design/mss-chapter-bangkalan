@@ -94,10 +94,10 @@ function Scanner() {
 
   const toneClass =
     hasil?.tone === "ok"
-      ? "border-green-500/40 bg-green-500/10 text-green-300"
+      ? "border-green-300 bg-green-50 text-green-800"
       : hasil?.tone === "warn"
-        ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-200"
-        : "border-red-500/40 bg-red-500/10 text-red-300";
+        ? "border-amber-300 bg-amber-50 text-amber-800"
+        : "border-red-300 bg-red-50 text-red-700";
 
   return (
     <div className="space-y-4">
