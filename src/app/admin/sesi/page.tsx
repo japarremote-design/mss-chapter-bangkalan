@@ -23,6 +23,7 @@ type Baris = {
   location: string;
   quota: string;
   coach: string;
+  fee: string;
 };
 
 const HARI = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -31,6 +32,18 @@ function iso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
     d.getDate()
   ).padStart(2, "0")}`;
+}
+
+const BULAN = [
+  "Januari","Februari","Maret","April","Mei","Juni",
+  "Juli","Agustus","September","Oktober","November","Desember",
+];
+
+/** "Jumat, 4 September 2026" — seperti di pesan grup. */
+function tanggalPanjang(s: string) {
+  const d = new Date(`${s}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return s;
+  return `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 function tanggalIndo(s: string) {
@@ -54,6 +67,7 @@ function barisAwal(): Baris[] {
       location: "",
       quota: "",
       coach: "",
+      fee: "",
     },
     {
       title: "Latihan Rutin",
@@ -62,6 +76,7 @@ function barisAwal(): Baris[] {
       location: "",
       quota: "",
       coach: "",
+      fee: "",
     },
   ];
 }
@@ -79,6 +94,12 @@ function Sesi() {
   const grup = useGrupWa();
 
   useEffect(() => setOrigin(window.location.origin), []);
+
+  // HTM default dari Pengaturan diisikan ke baris yang masih kosong.
+  useEffect(() => {
+    if (!grup.htmDefault) return;
+    setRows((prev) => prev.map((r) => (r.fee ? r : { ...r, fee: grup.htmDefault })));
+  }, [grup.htmDefault]);
 
   useEffect(() => {
     if (!user) return;
@@ -119,20 +140,44 @@ function Sesi() {
     return `${origin}/ikut/${w.id}?k=${w.token}`;
   }
 
-  function pesanWa(w: WeekFull) {
-    const daftar = w.sessions
-      .map(
-        (s) =>
-          `• ${tanggalIndo(s.date)}${s.startTime ? ` ${s.startTime}` : ""}${
-            s.location ? ` — ${s.location}` : ""
-          }`
-      )
+  /** Pesan jadwal dengan gaya yang biasa dipakai di grup. */
+  function teksPesan(w: WeekFull) {
+    const blok = w.sessions
+      .map((s) => {
+        const sisa = s.quota > 0 ? Math.max(0, s.quota - s.rsvpCount) : null;
+        return [
+          `Relawan Pelatih: ${s.coaches.join(" + ") || "-"}`,
+          `Hari/Tanggal : ${tanggalPanjang(s.date)}`,
+          `Jam      : *${s.startTime || "-"}*`,
+          `Tempat : Kolam *${s.location || "-"}*`,
+          s.fee ? `HTM     : ${s.fee}` : null,
+          s.quota > 0
+            ? `Kuota   : ${s.quota} orang (sisa ${sisa})`
+            : `Kuota   : tanpa batas`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+      })
+      .join("\n\n\n");
+
+    const pembuka = (grup.pesanPembuka || "").replace("{JADWAL}", w.label);
+
+    return [
+      pembuka,
+      "",
+      blok,
+      "",
+      "Isi list lewat link ini ya bunda (tidak perlu ketik nama di grup):",
+      linkIkut(w),
+      "",
+      grup.pesanCatatan,
+    ]
+      .filter((x) => x !== null && x !== undefined)
       .join("\n");
-    return encodeURIComponent(
-      `Assalamualaikum akhwat MSS Bangkalan 🏊‍♀️\n\nJadwal latihan minggu ini:\n${daftar}\n\n` +
-        `Yang mau ikut, silakan ngelist lewat link ini ya:\n${linkIkut(w)}\n\n` +
-        `Catatan: presensi di kolam hanya untuk yang sudah ngelist. Syukron!`
-    );
+  }
+
+  function pesanWa(w: WeekFull) {
+    return encodeURIComponent(teksPesan(w));
   }
 
   async function salin(w: WeekFull) {
@@ -176,15 +221,15 @@ function Sesi() {
                 }
               />
               <input
-                className="field sm:col-span-3"
-                placeholder="Jam, mis. 07.00 - 09.00"
+                className="field sm:col-span-2"
+                placeholder="Jam"
                 value={r.startTime}
                 onChange={(e) =>
                   setRows(rows.map((x, j) => (i === j ? { ...x, startTime: e.target.value } : x)))
                 }
               />
               <input
-                className="field sm:col-span-3"
+                className="field sm:col-span-2"
                 placeholder="Kolam"
                 value={r.location}
                 onChange={(e) =>
@@ -197,6 +242,14 @@ function Sesi() {
                 value={r.coach}
                 onChange={(e) =>
                   setRows(rows.map((x, j) => (i === j ? { ...x, coach: e.target.value } : x)))
+                }
+              />
+              <input
+                className="field sm:col-span-2"
+                placeholder="HTM"
+                value={r.fee}
+                onChange={(e) =>
+                  setRows(rows.map((x, j) => (i === j ? { ...x, fee: e.target.value } : x)))
                 }
               />
               <input
@@ -226,7 +279,15 @@ function Sesi() {
             onClick={() =>
               setRows([
                 ...rows,
-                { title: "Latihan Rutin", date: "", startTime: "", location: "", quota: "", coach: "" },
+                {
+                  title: "Latihan Rutin",
+                  date: "",
+                  startTime: "",
+                  location: "",
+                  quota: "",
+                  coach: "",
+                  fee: grup.htmDefault,
+                },
               ])
             }
             className="btn btn-ghost"
@@ -260,6 +321,16 @@ function Sesi() {
               <div className="ml-auto flex gap-2">
                 <button onClick={() => salin(w)} className="btn btn-ghost px-3 py-1 text-xs">
                   {copied === w.id ? "Tersalin ✓" : "Salin link"}
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(teksPesan(w));
+                    setCopied(`teks-${w.id}`);
+                    setTimeout(() => setCopied(""), 2000);
+                  }}
+                  className="btn btn-ghost px-3 py-1 text-xs"
+                >
+                  {copied === `teks-${w.id}` ? "Tersalin ✓" : "Salin teks pesan"}
                 </button>
                 <a
                   href={`https://wa.me/?text=${pesanWa(w)}`}
@@ -309,7 +380,8 @@ function Sesi() {
                     </Link>
                     <p className="text-xs text-[var(--muted)]">
                       {s.location || s.title}
-                      {s.coaches.length > 0 ? ` · ${s.coaches.join(" & ")}` : ""}
+                      {s.coaches.length > 0 ? ` · ${s.coaches.join(" + ")}` : ""}
+                      {s.fee ? ` · ${s.fee}` : ""}
                     </p>
                   </div>
                   <span className="ml-auto text-sm">

@@ -43,6 +43,7 @@ type Row = {
   location?: string;
   quota?: number;
   coach?: string;
+  fee?: string;
 };
 
 function normalisasi(v: string) {
@@ -88,6 +89,12 @@ export async function POST(req: Request) {
       const startTime = String(row.startTime ?? "").trim();
       const location = String(row.location ?? "").trim();
       const coach = String(row.coach ?? "").trim();
+      const fee = String(row.fee ?? "").trim();
+      // "Andri + Maria" → dua nama
+      const coachList = coach
+        .split(/\s*\+\s*/)
+        .map((c) => c.trim())
+        .filter(Boolean);
 
       // Hari, jam, dan kolam yang sama = satu latihan dengan beberapa relawan pelatih.
       const kembar = existing.docs.find((d) => {
@@ -103,8 +110,12 @@ export async function POST(req: Request) {
         const sebelumnya: string[] = Array.isArray(kembar.data().coaches)
           ? kembar.data().coaches
           : [];
-        if (coach && !sebelumnya.some((c) => normalisasi(c) === normalisasi(coach))) {
-          batch.update(kembar.ref, { coaches: [...sebelumnya, coach] });
+        const gabungan = [...sebelumnya];
+        for (const c of coachList) {
+          if (!gabungan.some((x) => normalisasi(x) === normalisasi(c))) gabungan.push(c);
+        }
+        if (gabungan.length !== sebelumnya.length) {
+          batch.update(kembar.ref, { coaches: gabungan });
         }
         digabung.push(`${date}${startTime ? ` ${startTime}` : ""}${location ? ` di ${location}` : ""}`);
         continue;
@@ -116,7 +127,8 @@ export async function POST(req: Request) {
         date,
         startTime,
         location,
-        coaches: coach ? [coach] : [],
+        coaches: coachList,
+        fee,
         quota: Number.isFinite(Number(row.quota)) ? Math.max(0, Number(row.quota)) : 0,
         open: true,
         attendeeCount: 0,

@@ -27,7 +27,16 @@ export async function POST(req: Request) {
       throw new HttpError(400, (e as Error).message);
     }
 
-    const settings = await saveSettings({ waGroupCalon, waGroupMember }, admin.email);
+    const settings = await saveSettings(
+      {
+        waGroupCalon,
+        waGroupMember,
+        pesanPembuka: String(body.pesanPembuka ?? ""),
+        pesanCatatan: String(body.pesanCatatan ?? ""),
+        htmDefault: String(body.htmDefault ?? ""),
+      },
+      admin.email
+    );
     return Response.json({ settings });
   } catch (err) {
     return errorResponse(err);

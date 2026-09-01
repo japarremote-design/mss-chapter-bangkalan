@@ -78,6 +78,38 @@ Cara mengambil tautannya: buka formulir pusat dalam mode edit → menu titik tig
 
 > Catatan: app **tidak** mengirim jawaban diam-diam ke pusat. Member sendiri yang menekan Kirim, jadi kalau pusat mengubah formulirnya, paling buruk ada kolom yang kosong — bukan data yang hilang tanpa ketahuan.
 
+## Pesan jadwal ke grup
+
+Tombol **Share ke WhatsApp** / **Salin teks pesan** di `/admin/sesi` menyusun pesan mengikuti gaya grup MSS:
+
+```
+Assalamu'alaikum, semangat pagi bunda2 semua☀
+
+Berikut Rencana jadwal latihan bersama (Latbar) utk pekan I bulan September 2026, In syaa Allah.
+…
+
+Relawan Pelatih: Andri + Maria
+Hari/Tanggal : Jumat, 4 September 2026
+Jam      : *07.00 WIB - 08.30 WIB*
+Tempat : Kolam *Safira*
+HTM     : 10000 + Infaq Terbaik
+Kuota   : 15 orang (sisa 12)
+
+…
+
+Isi list lewat link ini ya bunda (tidak perlu ketik nama di grup):
+https://…/ikut/xxx?k=xxx
+
+*Note* :
+Perlengkapan yang Wajib Di Bawa…
+```
+
+Bedanya dengan pesan manual: nomor 1–15 yang harus diketik member digantikan **satu link**. Sisa slot dihitung otomatis, jadi tidak ada lagi nama yang ketimpa ("ketik Otw dulu" tidak diperlukan lagi) dan tidak ada yang mendaftar melebihi kuota.
+
+Pembuka pesan, catatan penutup, dan HTM default diatur di `/admin/pengaturan`. Tulis `{JADWAL}` di pembuka untuk menyisipkan judul paket jadwal.
+
+Di halaman ngelist, tiap sesi menampilkan relawan pelatih, jam, kolam, HTM, sisa slot, dan **daftar nama yang sudah ikut** — sama seperti kebiasaan list di grup, tinggal ketuk "Lihat daftar nama".
+
 ## Dua grup WhatsApp
 
 Alurnya begini:
@@ -158,6 +190,8 @@ members/{id}
 
 config/umum
   waGroupCalon, waGroupMember    // link undangan grup WhatsApp
+  pesanPembuka, pesanCatatan     // template pesan jadwal
+  htmDefault
 
 config/pusat
   formUrl         // alamat formulir Google MSS Pusat
@@ -171,7 +205,8 @@ weeks/{id}
 
 sessions/{id}
   title, date ("YYYY-MM-DD"), startTime, location
-  coaches         // array nama relawan pelatih
+  coaches         // array nama relawan pelatih, mis. ["Andri", "Maria"]
+  fee             // HTM, mis. "10000 + Infaq Terbaik" 
   weekId          // milik paket mingguan yang mana
   quota           // 0 = tanpa batas
   open            boolean

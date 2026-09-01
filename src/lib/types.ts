@@ -53,6 +53,8 @@ export type TrainingSession = {
   quota: number;
   /** Nama relawan pelatih yang mendampingi sesi ini. */
   coaches: string[];
+  /** HTM / biaya masuk, mis. "10000 + Infaq Terbaik". */
+  fee: string;
   weekId?: string;
 };
 

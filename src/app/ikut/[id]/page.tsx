@@ -10,10 +10,13 @@ type Sesi = {
   date: string;
   startTime?: string;
   location?: string;
+  coaches: string[];
+  fee?: string;
   quota: number;
   rsvpCount: number;
   open: boolean;
   full: boolean;
+  names: string[];
 };
 type Week = { id: string; label: string; open: boolean };
 type Kandidat = { id: string; name: string; status: "calon" | "member" };
@@ -294,13 +297,23 @@ function Ikut() {
                     <div className="flex items-start gap-3">
                       <div className="min-w-0">
                         <p className="font-bold">{tanggalIndo(s.date)}</p>
+                        <p className="text-sm font-medium">{s.startTime || "-"}</p>
                         <p className="text-sm text-[var(--muted)]">
-                          {s.startTime ? `${s.startTime} · ` : ""}
-                          {s.location || s.title}
+                          Kolam {s.location || s.title}
                         </p>
-                        <p className="mt-1 text-xs text-[var(--muted)]">
-                          {s.rsvpCount} orang sudah ikut
-                          {s.quota > 0 ? ` · kuota ${s.quota}` : ""}
+                        {s.coaches.length > 0 && (
+                          <p className="text-xs text-[var(--muted)]">
+                            Relawan pelatih: {s.coaches.join(" + ")}
+                          </p>
+                        )}
+                        {s.fee && <p className="text-xs text-[var(--muted)]">HTM: {s.fee}</p>}
+                        <p className="mt-1 text-xs font-semibold text-[var(--accent)]">
+                          {s.quota > 0
+                            ? `${s.rsvpCount}/${s.quota} terisi · sisa ${Math.max(
+                                0,
+                                s.quota - s.rsvpCount
+                              )} slot`
+                            : `${s.rsvpCount} orang sudah ikut`}
                         </p>
                       </div>
                       <button
@@ -323,6 +336,19 @@ function Ikut() {
                       <p className="mt-3 rounded-lg bg-[var(--accent-soft)] p-2 text-center text-xs font-semibold text-[var(--accent)]">
                         ✓ Namamu sudah masuk daftar
                       </p>
+                    )}
+
+                    {s.names.length > 0 && (
+                      <details className="mt-3">
+                        <summary className="cursor-pointer text-xs text-[var(--muted)]">
+                          Lihat daftar nama ({s.names.length})
+                        </summary>
+                        <ol className="mt-2 list-decimal space-y-0.5 pl-5 text-xs text-[var(--muted)]">
+                          {s.names.map((n, idx) => (
+                            <li key={`${n}-${idx}`}>{n}</li>
+                          ))}
+                        </ol>
+                      </details>
                     )}
                   </div>
                 );

@@ -8,7 +8,13 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const s = await getSettings();
-    return Response.json({ waGroupCalon: s.waGroupCalon, waGroupMember: s.waGroupMember });
+    return Response.json({
+      waGroupCalon: s.waGroupCalon,
+      waGroupMember: s.waGroupMember,
+      pesanPembuka: s.pesanPembuka,
+      pesanCatatan: s.pesanCatatan,
+      htmDefault: s.htmDefault,
+    });
   } catch (err) {
     return errorResponse(err);
   }

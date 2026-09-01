@@ -87,6 +87,7 @@ export function sessionFromDoc(
     rsvpCount: d.rsvpCount ?? 0,
     quota: d.quota ?? 0,
     coaches: Array.isArray(d.coaches) ? d.coaches : [],
+    fee: d.fee ?? "",
     weekId: d.weekId ?? undefined,
   };
 }

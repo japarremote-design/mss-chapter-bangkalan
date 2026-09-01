@@ -12,11 +12,23 @@ export default function PengaturanPage() {
   );
 }
 
-type Settings = { waGroupCalon: string; waGroupMember: string };
+type Settings = {
+  waGroupCalon: string;
+  waGroupMember: string;
+  pesanPembuka: string;
+  pesanCatatan: string;
+  htmDefault: string;
+};
 
 function Pengaturan() {
   const { user, api } = useAdmin();
-  const [form, setForm] = useState<Settings>({ waGroupCalon: "", waGroupMember: "" });
+  const [form, setForm] = useState<Settings>({
+    waGroupCalon: "",
+    waGroupMember: "",
+    pesanPembuka: "",
+    pesanCatatan: "",
+    htmDefault: "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
@@ -102,6 +114,59 @@ function Pengaturan() {
           <p className="mt-1 text-xs text-[var(--muted)]">
             Ditawarkan begitu seseorang naik status jadi member setelah latihan perdananya.
           </p>
+        </div>
+
+        <div className="border-t border-[var(--line)] pt-4">
+          <p className="mb-3 font-semibold">Pesan jadwal ke grup</p>
+
+          <div className="mb-4">
+            <label className="label" htmlFor="htm">
+              HTM default
+            </label>
+            <input
+              id="htm"
+              className="field"
+              placeholder="10000 + Infaq Terbaik"
+              value={form.htmDefault}
+              onChange={(e) => setForm({ ...form, htmDefault: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Terisi otomatis saat membuat sesi baru; tetap bisa diubah per sesi.
+            </p>
+          </div>
+
+          <div className="mb-4">
+            <label className="label" htmlFor="pembuka">
+              Pembuka pesan
+            </label>
+            <textarea
+              id="pembuka"
+              rows={6}
+              className="field font-mono text-xs"
+              value={form.pesanPembuka}
+              onChange={(e) => setForm({ ...form, pesanPembuka: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Tulis <code>{"{JADWAL}"}</code> di tempat yang ingin diisi judul paket jadwal, mis.
+              &quot;pekan I bulan September 2026&quot;.
+            </p>
+          </div>
+
+          <div>
+            <label className="label" htmlFor="catatan">
+              Catatan penutup
+            </label>
+            <textarea
+              id="catatan"
+              rows={8}
+              className="field font-mono text-xs"
+              value={form.pesanCatatan}
+              onChange={(e) => setForm({ ...form, pesanCatatan: e.target.value })}
+            />
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Perlengkapan wajib, aturan info H-2, dan pesan lain yang selalu ikut di bawah jadwal.
+            </p>
+          </div>
         </div>
 
         {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
