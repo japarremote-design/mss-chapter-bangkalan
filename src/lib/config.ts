@@ -6,7 +6,7 @@ export const SITE = {
   name: "MSS Chapter Bangkalan",
   longName: "Muslimah Swimming Squad",
   tagline:
-    "Wadah renang syar'i khusus akhwat. Berenang sehat, nyaman, gratis, cukup bayar pakai doa!",
+    "Komunitas belajar renang gratis khusus muslimah usia 15 tahun ke atas. Berenang sehat, nyaman, gratis, cukup bayar pakai doa!",
 };
 
 export type AdminContact = {
@@ -77,7 +77,7 @@ export const KEUNGGULAN = [
   },
   {
     icon: "users",
-    title: "Ukhuwah Akhwat",
+    title: "Ukhuwah Muslimah",
     body: "Menambah relasi positif sesama muslimah di Bangkalan dalam lingkungan yang suportif.",
   },
 ];

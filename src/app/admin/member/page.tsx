@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { useAdmin } from "@/components/useAdmin";
+import { ImporMember } from "@/components/ImporMember";
 import type { Member, MemberStatus } from "@/lib/types";
 
 export default function MemberPage() {
@@ -24,6 +25,7 @@ function Member() {
   const [busy, setBusy] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [buka, setBuka] = useState("");
+  const [showImpor, setShowImpor] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -128,10 +130,24 @@ function Member() {
         <button onClick={unduhCsv} className="btn btn-ghost ml-auto">
           Unduh CSV
         </button>
+        <button onClick={() => setShowImpor((v) => !v)} className="btn btn-ghost">
+          {showImpor ? "Tutup impor" : "Impor CSV"}
+        </button>
         <button onClick={() => setShowForm((v) => !v)} className="btn btn-primary">
           {showForm ? "Batal" : "+ Tambah"}
         </button>
       </div>
+
+      {showImpor && (
+        <ImporMember
+          api={api}
+          onSelesai={() =>
+            api<{ members: Member[] }>("/api/admin/members")
+              .then((d) => setMembers(d.members))
+              .catch(() => {})
+          }
+        />
+      )}
 
       {showForm && (
         <form onSubmit={tambah} className="panel grid gap-3 p-4 sm:grid-cols-2">

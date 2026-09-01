@@ -161,16 +161,22 @@ Respons jadwal tetap `[{ "Hari": ..., "Jam": ..., "Lokasi Kolam": ..., "Status":
 
 Kalau ingin membatasi siapa yang boleh memanggil API, isi env `ALLOWED_ORIGINS` dengan domain Blogger-mu (dipisah koma). Dikosongkan = terbuka untuk semua.
 
-## Migrasi data dari Google Sheet
+## Impor data lama
 
-```bash
-# 1. Di Google Sheet: sheet "Pendaftar" → File → Download → CSV
-# 2. Taruh filenya di folder proyek, lalu:
-node scripts/import-pendaftar.mjs pendaftar.csv --dry   # lihat dulu hasil bacanya
-node scripts/import-pendaftar.mjs pendaftar.csv         # tulis ke Firestore
-```
+Cara paling gampang lewat panel admin, tanpa terminal:
 
-Semua pendaftar masuk sebagai **calon member** dengan kode kartu QR otomatis. Script aman dijalankan berulang — nomor WhatsApp yang sudah ada akan dilewati.
+1. Di Google Sheet: **File → Download → Comma-separated values (.csv)**
+2. Buka `/admin/member` → tombol **Impor CSV** → pilih filenya
+3. App menampilkan berapa baris terbaca, berapa yang jadi member dan berapa calon member, plus contoh 5 baris pertama
+4. Tekan **Impor** — 400+ baris dikirim bertahap 200-an, dengan penunjuk kemajuan
+
+Judul kolom dikenali otomatis: *Nama Lengkap, Nama Panggilan, No WA, Status, Usia, Jenis Kelamin, Agama, Alamat Domisili, Pekerjaan, Status Pernikahan, Sudah bisa berenang, Punya trauma air, Riwayat penyakit, Pelatih renang, Kenal MSS melalui, Motivasi, Tempat/Tanggal lahir, Kecamatan, Kabupaten, Provinsi, Jumlah hadir, Timestamp*. Kolom lain diabaikan dan disebutkan di layar.
+
+**Status** ditentukan dari kolom `Status` (isinya "member" / "anggota") atau dari `Jumlah hadir` yang lebih dari 0; selain itu masuk sebagai calon member. Tiap baris dapat kode kartu QR otomatis.
+
+Aman diulang: nomor WhatsApp yang sudah ada di database dilewati, dan daftar yang dilewati ditampilkan setelah selesai.
+
+> Masih ada juga `node scripts/import-pendaftar.mjs pendaftar.csv --dry` untuk yang lebih suka terminal, tapi tombol Impor CSV di atas lebih lengkap.
 
 ## Struktur data Firestore
 

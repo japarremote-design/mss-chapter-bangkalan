@@ -16,7 +16,7 @@ export default function DaftarPage() {
 
         <h1 className="wordmark text-2xl">Gabung Skuad</h1>
         <p className="mt-1 mb-5 text-sm text-[var(--muted)]">
-          Pendaftaran calon member — sekitar 2 menit, dibagi 3 langkah.
+          Terbuka untuk muslimah usia 15 tahun ke atas — sekitar 2 menit, dibagi 3 langkah.
         </p>
 
         <FormDaftar />

@@ -54,9 +54,11 @@ export function FormDaftar() {
 
   const set = (k: Field, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const usiaKurang = form.age.trim() !== "" && Number(form.age) > 0 && Number(form.age) < 15;
+
   const terisi = useMemo(
-    () => LANGKAH[step].fields.every((f) => form[f].trim() !== ""),
-    [form, step]
+    () => LANGKAH[step].fields.every((f) => form[f].trim() !== "") && !usiaKurang,
+    [form, step, usiaKurang]
   );
 
   const progres = useMemo(() => {
@@ -136,6 +138,7 @@ export function FormDaftar() {
                 onChange={(v) => set("age", v)}
                 inputMode="numeric"
                 placeholder="mis. 24"
+                hint="Minimal 15 tahun."
               />
               <Teks
                 label="Status pernikahan"
@@ -158,6 +161,12 @@ export function FormDaftar() {
               placeholder="Kecamatan / desa cukup"
             />
             <Teks label="Pekerjaan" value={form.job} onChange={(v) => set("job", v)} />
+            {usiaKurang && (
+              <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+                Latihan MSS terbuka untuk usia 15 tahun ke atas. Hubungi admin kalau ingin
+                menanyakan kemungkinan lain.
+              </p>
+            )}
           </>
         )}
 

@@ -15,7 +15,7 @@ const siteUrl =
 
 const title = `${SITE.name} — ${SITE.longName}`;
 const description =
-  "Komunitas renang syar'i khusus akhwat di Bangkalan. Lihat jadwal latihan, daftar jadi member, dan presensi latihan lewat QR.";
+  "Komunitas belajar renang gratis khusus muslimah usia 15 tahun ke atas di Bangkalan. Lihat jadwal latihan, daftar jadi member, dan presensi lewat QR.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   keywords: [
     "MSS Bangkalan",
     "Muslimah Swimming Squad",
-    "renang syar'i",
+    "belajar renang gratis",
     "renang muslimah Bangkalan",
-    "komunitas renang akhwat",
+    "komunitas renang muslimah",
     "les renang Bangkalan",
   ],
   alternates: { canonical: "/" },
