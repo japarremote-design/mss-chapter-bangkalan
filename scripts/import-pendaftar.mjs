@@ -186,6 +186,6 @@ for (const rec of records) {
 console.log(
   DRY
     ? `\nMode uji: ${masuk} baris siap diimpor, ${dilewati} dilewati. Jalankan tanpa --dry untuk menulis ke database.`
-    : `\nSelesai. ${masuk} anggota masuk, ${dilewati} dilewati.`
+    : `\nSelesai. ${masuk} member masuk, ${dilewati} dilewati.`
 );
 process.exit(0);

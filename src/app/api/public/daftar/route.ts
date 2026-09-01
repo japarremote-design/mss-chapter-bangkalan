@@ -10,9 +10,11 @@ export async function OPTIONS(req: Request) {
   return preflight(req);
 }
 
+const teks = (v: unknown) => String(v ?? "").trim();
+
 /**
- * Pendaftaran calon anggota. Dipakai halaman /daftar dan juga situs Blogger.
- * Menerima nama field versi baru (name/phone) maupun versi lama Apps Script
+ * Pendaftaran calon member — isian mengikuti formulir MSS.
+ * Menerima nama field versi baru maupun versi lama Apps Script / Google Form
  * (nama/whatsapp/pekerjaan/alasan) supaya kode Blogger lama tetap jalan.
  */
 export async function POST(req: Request) {
@@ -22,19 +24,19 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const name = String(body.name ?? body.nama ?? "").trim();
-    const phone = String(body.phone ?? body.whatsapp ?? "").trim();
-    const job = String(body.job ?? body.pekerjaan ?? "").trim();
-    const reason = String(body.reason ?? body.alasan ?? "").trim();
-    const address = String(body.address ?? body.alamat ?? "").trim();
 
-    if (name.length < 2) throw new HttpError(400, "Nama wajib diisi.");
+    const name = teks(body.name ?? body.nama);
+    const phone = teks(body.phone ?? body.whatsapp ?? body.noWa);
+    if (name.length < 2) throw new HttpError(400, "Nama lengkap wajib diisi.");
     if (phone.replace(/\D/g, "").length < 8) throw new HttpError(400, "Nomor WhatsApp wajib diisi.");
 
     const db = adminDb();
     const dup = await db.collection("members").where("phone", "==", phone).limit(1).get();
     if (!dup.empty) {
-      throw new HttpError(409, "Nomor ini sudah terdaftar. Hubungi pengurus kalau perlu bantuan.");
+      throw new HttpError(
+        409,
+        "Nomor ini sudah terdaftar. Hubungi relawan pelatih kalau perlu bantuan."
+      );
     }
 
     const code = await createUniqueCode();
@@ -42,16 +44,26 @@ export async function POST(req: Request) {
       code,
       name,
       phone,
-      address,
-      job,
-      reason,
+      nickname: teks(body.nickname ?? body.panggilan),
+      age: teks(body.age ?? body.usia),
+      gender: teks(body.gender ?? body.jenisKelamin),
+      religion: teks(body.religion ?? body.agama),
+      address: teks(body.address ?? body.alamat),
+      job: teks(body.job ?? body.pekerjaan),
+      maritalStatus: teks(body.maritalStatus ?? body.statusPernikahan),
+      canSwim: teks(body.canSwim ?? body.bisaBerenang),
+      waterTrauma: teks(body.waterTrauma ?? body.traumaAir),
+      healthNotes: teks(body.healthNotes ?? body.riwayatPenyakit),
+      isSwimCoach: teks(body.isSwimCoach ?? body.pelatihRenang),
+      knowFrom: teks(body.knowFrom ?? body.kenalMelalui),
+      reason: teks(body.reason ?? body.motivasi ?? body.alasan),
       note: "",
       status: "calon",
       attendanceCount: 0,
       firstAttendedAt: null,
       lastAttendedAt: null,
       createdAt: new Date().toISOString(),
-      source: String(body.source ?? "web").trim(),
+      source: teks(body.source) || "web",
     });
 
     return withCors(
@@ -68,7 +80,7 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     const res = errorResponse(err);
-    const data = { success: false, error: "" };
+    const data = { error: "" };
     try {
       Object.assign(data, await res.clone().json());
     } catch {}

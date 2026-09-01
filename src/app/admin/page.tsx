@@ -42,8 +42,8 @@ function Dashboard() {
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Anggota" value={jumlahMember} />
-        <Stat label="Calon anggota" value={jumlahCalon} />
+        <Stat label="Member" value={jumlahMember} />
+        <Stat label="Calon member" value={jumlahCalon} />
         <Stat label="Sesi latihan" value={sessions.length} />
         <Stat label="Sesi dibuka" value={sesiTerbuka.length} accent />
       </div>

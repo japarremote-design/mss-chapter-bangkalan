@@ -1,12 +1,15 @@
-import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { memberFromDoc } from "@/lib/data";
+import { listRsvp } from "@/lib/data";
 import { verifyToken } from "@/lib/token";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Cari nama anggota untuk presensi mandiri. Hanya mengembalikan id + nama. */
+/**
+ * Cari nama untuk presensi mandiri.
+ * Hanya mencari di antara yang sudah ngelist ikut sesi ini — orang lain
+ * memang tidak boleh presensi, jadi tidak perlu ditampilkan.
+ */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -17,12 +20,11 @@ export async function POST(req: Request) {
     if (!verifyToken(sessionId, token)) throw new HttpError(401, "QR sudah kedaluwarsa.");
     if (q.length < 2) return Response.json({ members: [] });
 
-    const snap = await adminDb().collection("members").orderBy("name").get();
-    const members = snap.docs
-      .map(memberFromDoc)
-      .filter((m) => m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q))
+    const rsvp = await listRsvp(sessionId);
+    const members = rsvp
+      .filter((r) => r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q))
       .slice(0, 12)
-      .map((m) => ({ id: m.id, name: m.name, status: m.status }));
+      .map((r) => ({ id: r.memberId, name: r.name, attended: r.attended }));
 
     return Response.json({ members });
   } catch (err) {

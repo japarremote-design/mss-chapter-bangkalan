@@ -8,8 +8,10 @@ import { useAdmin } from "./useAdmin";
 const NAV = [
   { href: "/admin", label: "Dasbor" },
   { href: "/admin/sesi", label: "Sesi Latihan" },
-  { href: "/admin/anggota", label: "Anggota" },
+  { href: "/admin/member", label: "Member" },
   { href: "/admin/jadwal", label: "Jadwal" },
+  { href: "/admin/pusat", label: "MSS Pusat" },
+  { href: "/admin/pengaturan", label: "Pengaturan" },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

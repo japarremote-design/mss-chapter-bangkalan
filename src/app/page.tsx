@@ -186,17 +186,18 @@ function Daftar() {
   return (
     <section id="daftar" className="scroll-mt-20 bg-[#e8f4fc] py-14">
       <div className="mx-auto max-w-lg px-4">
-        <div className="panel p-6 sm:p-8">
-          <h2 className="text-center text-xl font-bold sm:text-2xl">Formulir Gabung Skuad</h2>
-          <p className="mt-2 mb-6 text-center text-sm text-[var(--muted)]">
-            Data kamu aman dan hanya dipakai untuk keperluan koordinasi latihan.
+        <div className="mb-5 text-center">
+          <h2 className="text-2xl font-bold sm:text-3xl">Gabung Skuad</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            Pendaftaran calon member — sekitar 2 menit, dibagi 3 langkah.
           </p>
-          <FormDaftar />
         </div>
+
+        <FormDaftar />
 
         <div className="mt-6">
           <h3 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
-            Tanya langsung ke admin chapter
+            Tanya langsung ke admin
           </h3>
           <div className="space-y-3">
             {ADMIN_CONTACTS.map((a) => (
@@ -204,7 +205,7 @@ function Daftar() {
                 key={a.phone}
                 href={waLink(
                   a.phone,
-                  `Assalamualaikum ${a.name}, saya ingin tanya seputar pendaftaran MSS Chapter Bangkalan...`
+                  `Assalamualaikum Admin ${a.name}, saya ingin tanya seputar pendaftaran MSS Chapter Bangkalan...`
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -215,7 +216,7 @@ function Daftar() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-bold">
-                    {a.name} <span className="font-normal text-[var(--muted)]">({a.role})</span>
+                    Admin {a.name} <span className="font-normal text-[var(--muted)]">({a.role})</span>
                   </span>
                   <span className="block text-xs text-[var(--muted)]">
                     Fast response tanya &amp; konsultasi

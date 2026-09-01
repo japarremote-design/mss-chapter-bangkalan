@@ -17,9 +17,25 @@ export type AdminContact = {
 };
 
 export const ADMIN_CONTACTS: AdminContact[] = [
-  { phone: "6281804514215", name: "Admin Aan", role: "Chapter 1" },
-  { phone: "6287750767647", name: "Admin Andriana", role: "Chapter 2" },
+  { phone: "6287849377554", name: "Eka", role: "Admin 1" },
+  { phone: "6287750767647", name: "Andriana", role: "Admin 2" },
 ];
+
+/**
+ * Link undangan grup WhatsApp. Diisi lewat environment variable supaya bisa
+ * diganti tanpa menyentuh kode (link undangan WA bisa di-reset kapan saja).
+ * Kalau kosong, tombolnya otomatis tidak ditampilkan.
+ */
+export const WA_GROUPS = {
+  calon: {
+    label: "Grup WhatsApp Calon Member",
+    url: process.env.NEXT_PUBLIC_WA_GROUP_CALON ?? "",
+  },
+  member: {
+    label: "Grup WhatsApp Member",
+    url: process.env.NEXT_PUBLIC_WA_GROUP_MEMBER ?? "",
+  },
+};
 
 export const SOCIALS = [
   {

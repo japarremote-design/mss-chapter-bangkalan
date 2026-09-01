@@ -1,14 +1,14 @@
-import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { createUniqueCode, recordAttendance } from "@/lib/data";
+import { recordAttendance } from "@/lib/data";
+import { linkToken } from "@/lib/token";
 import { verifyToken } from "@/lib/token";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Mode A: anggota scan QR di layar panitia lalu presensi sendiri.
- * Bisa memilih nama yang sudah terdaftar (memberId) atau mendaftar baru (name).
+ * Mode A: member scan QR di layar relawan pelatih lalu presensi sendiri.
+ * Hanya untuk yang sudah ngelist ikut latihan ini (dicek di recordAttendance).
  */
 export async function POST(req: Request) {
   try {
@@ -19,27 +19,8 @@ export async function POST(req: Request) {
       throw new HttpError(401, "QR sudah kedaluwarsa. Scan ulang di layar panitia.");
     }
 
-    let memberId = String(body.memberId ?? "").trim();
-
-    if (!memberId) {
-      const name = String(body.name ?? "").trim();
-      if (!name) throw new HttpError(400, "Pilih nama kamu atau isi nama untuk mendaftar.");
-      const code = await createUniqueCode();
-      const now = new Date().toISOString();
-      const ref = await adminDb().collection("members").add({
-        code,
-        name,
-        phone: String(body.phone ?? "").trim(),
-        address: String(body.address ?? "").trim(),
-        note: "",
-        status: "calon",
-        attendanceCount: 0,
-        firstAttendedAt: null,
-        lastAttendedAt: null,
-        createdAt: now,
-      });
-      memberId = ref.id;
-    }
+    const memberId = String(body.memberId ?? "").trim();
+    if (!memberId) throw new HttpError(400, "Pilih namamu dulu.");
 
     const result = await recordAttendance({ sessionId, memberId, method: "mandiri" });
     return Response.json({
@@ -48,6 +29,8 @@ export async function POST(req: Request) {
       promoted: result.promoted,
       name: result.record.name,
       code: result.record.code,
+      memberId,
+      memberToken: linkToken(memberId),
     });
   } catch (err) {
     return errorResponse(err);

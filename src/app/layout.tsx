@@ -15,7 +15,7 @@ const siteUrl =
 
 const title = `${SITE.name} — ${SITE.longName}`;
 const description =
-  "Komunitas renang syar'i khusus akhwat di Bangkalan. Lihat jadwal latihan, daftar jadi anggota, dan presensi latihan lewat QR.";
+  "Komunitas renang syar'i khusus akhwat di Bangkalan. Lihat jadwal latihan, daftar jadi member, dan presensi latihan lewat QR.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

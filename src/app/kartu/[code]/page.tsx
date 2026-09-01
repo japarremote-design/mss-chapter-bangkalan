@@ -34,7 +34,7 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
         <span
           className={`badge mt-2 ${member.status === "member" ? "badge-member" : "badge-calon"}`}
         >
-          {member.status === "member" ? "ANGGOTA" : "CALON ANGGOTA"}
+          {member.status === "member" ? "MEMBER" : "CALON MEMBER"}
         </span>
 
         <div className="mt-5 flex justify-center">

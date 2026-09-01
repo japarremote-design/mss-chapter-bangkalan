@@ -32,3 +32,19 @@ export function verifyToken(sessionId: string, token: string, now = Date.now()):
   }
   return false;
 }
+
+/**
+ * Token permanen untuk link yang dibagikan ke grup WhatsApp (jadwal mingguan).
+ * Tidak berganti waktu — supaya link yang sudah dishare tetap valid seminggu penuh —
+ * tapi tetap ditandatangani agar orang luar tidak bisa menebak URL-nya.
+ */
+export function linkToken(id: string): string {
+  return createHmac("sha256", secret()).update(`link:${id}`).digest("base64url").slice(0, 12);
+}
+
+export function verifyLinkToken(id: string, token: string): boolean {
+  if (!token) return false;
+  const a = Buffer.from(linkToken(id));
+  const b = Buffer.from(token);
+  return a.length === b.length && timingSafeEqual(a, b);
+}

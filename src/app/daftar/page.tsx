@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FormDaftar } from "@/components/FormDaftar";
 import { SITE } from "@/lib/config";
 
-export const metadata = { title: "Daftar Calon Anggota — MSS Chapter Bangkalan" };
+export const metadata = { title: "Daftar Calon Member — MSS Chapter Bangkalan" };
 
 export default function DaftarPage() {
   return (
@@ -14,14 +14,12 @@ export default function DaftarPage() {
           <span className="wordmark text-sm">{SITE.name}</span>
         </Link>
 
-        <h1 className="wordmark text-2xl">Formulir Gabung Skuad</h1>
-        <p className="mt-1 mb-6 text-sm text-[var(--muted)]">
-          Data kamu aman dan hanya dipakai untuk keperluan koordinasi latihan.
+        <h1 className="wordmark text-2xl">Gabung Skuad</h1>
+        <p className="mt-1 mb-5 text-sm text-[var(--muted)]">
+          Pendaftaran calon member — sekitar 2 menit, dibagi 3 langkah.
         </p>
 
-        <div className="panel p-5">
-          <FormDaftar />
-        </div>
+        <FormDaftar />
 
         <Link href="/" className="mt-6 inline-block text-sm text-[var(--accent)]">
           ← Kembali ke beranda

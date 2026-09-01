@@ -15,7 +15,7 @@ export default function ScanPage() {
   );
 }
 
-type Hasil = { ok: boolean; text: string; tone: "ok" | "warn" | "err" };
+type Hasil = { ok: boolean; text: string; tone: "ok" | "warn" | "err"; forceCode?: string };
 
 function Scanner() {
   const { id } = useParams<{ id: string }>();
@@ -28,16 +28,16 @@ function Scanner() {
   const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null);
 
   const kirim = useCallback(
-    async (code: string) => {
+    async (code: string, force = false) => {
       // Cegah kartu yang sama terbaca berkali-kali dalam 3 detik.
       const now = Date.now();
-      if (lastRef.current.code === code && now - lastRef.current.at < 3000) return;
+      if (!force && lastRef.current.code === code && now - lastRef.current.at < 3000) return;
       lastRef.current = { code, at: now };
 
       try {
         const d = await api<{ alreadyIn: boolean; promoted: boolean; member: Member }>(
           `/api/admin/sessions/${id}/scan`,
-          { method: "POST", body: JSON.stringify({ code }) }
+          { method: "POST", body: JSON.stringify({ code, force }) }
         );
         if (d.alreadyIn) {
           setHasil({ ok: true, tone: "warn", text: `${d.member.name} sudah tercatat hadir.` });
@@ -46,13 +46,20 @@ function Scanner() {
             ok: true,
             tone: "ok",
             text: d.promoted
-              ? `${d.member.name} hadir — latihan pertama, status naik jadi ANGGOTA.`
+              ? `${d.member.name} hadir — latihan pertama, status naik jadi MEMBER.`
               : `${d.member.name} tercatat hadir.`,
           });
           setLog((prev) => [`${d.member.name} · ${d.member.code}`, ...prev].slice(0, 30));
         }
       } catch (err) {
-        setHasil({ ok: false, tone: "err", text: (err as Error).message });
+        const text = (err as Error).message;
+        setHasil({
+          ok: false,
+          tone: "err",
+          text,
+          // Relawan pelatih boleh menimpa aturan "harus ngelist" kalau memang mengizinkan.
+          forceCode: text.includes("belum ngelist") ? code : undefined,
+        });
       }
     },
     [api, id]
@@ -102,7 +109,7 @@ function Scanner() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-bold">Scan kartu anggota</h1>
+        <h1 className="text-lg font-bold">Scan kartu member</h1>
         <Link href={`/admin/sesi/${id}`} className="btn btn-ghost ml-auto px-3 py-1 text-xs">
           ← Kembali ke sesi
         </Link>
@@ -121,7 +128,19 @@ function Scanner() {
         <div id="reader" className="mt-4 overflow-hidden rounded-xl" />
       </div>
 
-      {hasil && <div className={`rounded-xl border p-3 text-sm ${toneClass}`}>{hasil.text}</div>}
+      {hasil && (
+        <div className={`rounded-xl border p-3 text-sm ${toneClass}`}>
+          <p>{hasil.text}</p>
+          {hasil.forceCode && (
+            <button
+              onClick={() => kirim(hasil.forceCode as string, true)}
+              className="btn btn-ghost mt-2 px-3 py-1 text-xs"
+            >
+              Tetap catat hadir (tanpa list)
+            </button>
+          )}
+        </div>
+      )}
 
       <form
         className="panel flex gap-2 p-4"

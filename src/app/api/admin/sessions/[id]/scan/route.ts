@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Mode B: admin men-scan kartu QR milik anggota (isi QR = kode anggota). */
+/** Mode B: admin men-scan kartu QR milik member (isi QR = kode member). */
 export async function POST(req: Request, { params }: Ctx) {
   try {
     await requireAdmin(req);
@@ -31,7 +31,12 @@ export async function POST(req: Request, { params }: Ctx) {
       memberId = hit.docs[0].id;
     }
 
-    const result = await recordAttendance({ sessionId, memberId, method: "scan-kartu" });
+    const result = await recordAttendance({
+      sessionId,
+      memberId,
+      method: "scan-kartu",
+      force: body.force === true,
+    });
     const member = memberFromDoc(await adminDb().collection("members").doc(memberId).get());
 
     return Response.json({

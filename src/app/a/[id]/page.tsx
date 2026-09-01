@@ -2,6 +2,8 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useGrupWa } from "@/components/useGrupWa";
+import { PusatLangkah } from "@/components/PusatLangkah";
 
 type SessionInfo = {
   id: string;
@@ -10,7 +12,7 @@ type SessionInfo = {
   startTime?: string;
   location?: string;
 };
-type Kandidat = { id: string; name: string; status: "calon" | "member" };
+type Kandidat = { id: string; name: string; attended: boolean };
 
 export default function CheckinPage() {
   return (
@@ -29,6 +31,7 @@ function Center({ children }: { children: React.ReactNode }) {
 }
 
 function Checkin() {
+  const grup = useGrupWa();
   const { id } = useParams<{ id: string }>();
   const token = useSearchParams().get("t") ?? "";
 
@@ -37,11 +40,13 @@ function Checkin() {
   const [q, setQ] = useState("");
   const [kandidat, setKandidat] = useState<Kandidat[]>([]);
   const [busy, setBusy] = useState(false);
-  const [sukses, setSukses] = useState<{ name: string; promoted: boolean; already: boolean } | null>(
-    null
-  );
-  const [modeBaru, setModeBaru] = useState(false);
-  const [baru, setBaru] = useState({ name: "", phone: "" });
+  const [sukses, setSukses] = useState<{
+    name: string;
+    promoted: boolean;
+    already: boolean;
+    memberId: string;
+    memberToken: string;
+  } | null>(null);
 
   useEffect(() => {
     fetch(`/api/public/session/${id}?t=${encodeURIComponent(token)}`)
@@ -84,7 +89,13 @@ function Checkin() {
         });
         const d = await r.json();
         if (!r.ok) throw new Error(d.error);
-        setSukses({ name: d.name, promoted: d.promoted, already: d.alreadyIn });
+        setSukses({
+          name: d.name,
+          promoted: d.promoted,
+          already: d.alreadyIn,
+          memberId: d.memberId,
+          memberToken: d.memberToken,
+        });
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -104,11 +115,26 @@ function Checkin() {
           </h1>
           <p className="mt-1 text-lg font-semibold text-[var(--accent)]">{sukses.name}</p>
           {sukses.promoted && (
-            <p className="mt-3 text-sm text-green-700">
-              Selamat! Ini latihan pertamamu — statusmu naik jadi <b>ANGGOTA</b>.
-            </p>
+            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4">
+              <p className="text-sm text-green-800">
+                Selamat! Ini latihan pertamamu — statusmu naik jadi <b>MEMBER</b>.
+              </p>
+              {grup.member && (
+                <a
+                  href={grup.member}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary mt-3 w-full"
+                >
+                  Gabung Grup WhatsApp Member
+                </a>
+              )}
+            </div>
           )}
-          <p className="mt-4 text-xs text-[var(--muted)]">Tunjukkan layar ini ke pengurus.</p>
+          {sukses.promoted && sukses.memberId && (
+            <PusatLangkah memberId={sukses.memberId} token={sukses.memberToken} />
+          )}
+          <p className="mt-4 text-xs text-[var(--muted)]">Tunjukkan layar ini ke relawan pelatih.</p>
         </div>
       </main>
     );
@@ -143,9 +169,8 @@ function Checkin() {
         </div>
       </div>
 
-      {!modeBaru ? (
-        <>
-          <label className="label">Cari namamu</label>
+      <>
+        <label className="label">Cari namamu</label>
           <input
             autoFocus
             className="field"
@@ -163,18 +188,14 @@ function Checkin() {
                   className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-[var(--accent-soft)]"
                 >
                   <span className="font-medium">{k.name}</span>
-                  <span
-                    className={`badge ml-auto ${
-                      k.status === "member" ? "badge-member" : "badge-calon"
-                    }`}
-                  >
-                    {k.status === "member" ? "ANGGOTA" : "CALON"}
-                  </span>
+                  {k.attended && <span className="badge badge-member ml-auto">SUDAH HADIR</span>}
                 </button>
               </li>
             ))}
             {q.trim().length >= 2 && kandidat.length === 0 && (
-              <li className="px-4 py-3 text-sm text-[var(--muted)]">Nama tidak ditemukan.</li>
+              <li className="px-4 py-3 text-sm text-[var(--muted)]">
+                Nama tidak ada di daftar ikut sesi ini.
+              </li>
             )}
             {q.trim().length < 2 && (
               <li className="px-4 py-3 text-sm text-[var(--muted)]">
@@ -185,49 +206,11 @@ function Checkin() {
 
           {error && <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>}
 
-          <button onClick={() => setModeBaru(true)} className="btn btn-ghost mt-4 w-full">
-            Belum terdaftar? Daftar sekarang
-          </button>
-        </>
-      ) : (
-        <form
-          className="panel space-y-3 p-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            hadir({ name: baru.name, phone: baru.phone });
-          }}
-        >
-          <p className="text-sm text-[var(--muted)]">
-            Isi data singkat, kamu langsung tercatat hadir di latihan ini.
-          </p>
-          <div>
-            <label className="label">Nama lengkap</label>
-            <input
-              required
-              className="field"
-              value={baru.name}
-              onChange={(e) => setBaru({ ...baru, name: e.target.value })}
-            />
+          <div className="panel mt-4 p-4 text-xs text-[var(--muted)]">
+            Nama tidak ada? Presensi hanya untuk yang sudah ngelist lewat link jadwal di grup
+            WhatsApp. Hubungi relawan pelatih supaya didaftarkan.
           </div>
-          <div>
-            <label className="label">Nomor WhatsApp</label>
-            <input
-              required
-              inputMode="tel"
-              className="field"
-              value={baru.phone}
-              onChange={(e) => setBaru({ ...baru, phone: e.target.value })}
-            />
-          </div>
-          {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
-          <button disabled={busy} className="btn btn-primary w-full">
-            {busy ? "Memproses…" : "Daftar & hadir"}
-          </button>
-          <button type="button" onClick={() => setModeBaru(false)} className="btn btn-ghost w-full">
-            Kembali ke pencarian nama
-          </button>
-        </form>
-      )}
+      </>
     </main>
   );
 }
