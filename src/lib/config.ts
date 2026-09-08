@@ -17,8 +17,8 @@ export type AdminContact = {
 };
 
 export const ADMIN_CONTACTS: AdminContact[] = [
-  { phone: "6287849377554", name: "Eka", role: "Admin 1" },
-  { phone: "6287750767647", name: "Andriana", role: "Admin 2" },
+  { phone: "6287750767647", name: "Andriana", role: "Admin 1" },
+  { phone: "6287849377554", name: "Eka", role: "Admin 2" },
 ];
 
 /**

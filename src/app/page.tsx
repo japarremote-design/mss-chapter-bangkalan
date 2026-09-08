@@ -4,6 +4,7 @@ import { listSchedules } from "@/lib/data";
 import { ADMIN_CONTACTS, KEUNGGULAN, SITE, SOCIALS, waLink } from "@/lib/config";
 import { FeatureIcon, IconWhatsapp, SocialIcon } from "@/components/Icons";
 import { FormDaftar } from "@/components/FormDaftar";
+import { FabWa } from "@/components/FabWa";
 import type { Schedule } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function Home() {
       <Jadwal schedules={schedules} error={scheduleError} />
       <Daftar />
       <Footer />
+      <FabWa />
     </div>
   );
 }

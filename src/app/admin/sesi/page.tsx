@@ -144,16 +144,13 @@ function Sesi() {
   function teksPesan(w: WeekFull) {
     const blok = w.sessions
       .map((s) => {
-        const sisa = s.quota > 0 ? Math.max(0, s.quota - s.rsvpCount) : null;
         return [
           `Relawan Pelatih: ${s.coaches.join(" + ") || "-"}`,
           `Hari/Tanggal : ${tanggalPanjang(s.date)}`,
           `Jam      : *${s.startTime || "-"}*`,
           `Tempat : Kolam *${s.location || "-"}*`,
           s.fee ? `HTM     : ${s.fee}` : null,
-          s.quota > 0
-            ? `Kuota   : ${s.quota} orang (sisa ${sisa})`
-            : `Kuota   : tanpa batas`,
+          s.quota > 0 ? `Kuota   : ${s.quota} orang` : null,
         ]
           .filter(Boolean)
           .join("\n");

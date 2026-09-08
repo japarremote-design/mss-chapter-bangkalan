@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormDaftar } from "@/components/FormDaftar";
+import { FabWa } from "@/components/FabWa";
 import { SITE } from "@/lib/config";
 
-export const metadata = { title: "Daftar Calon Member — MSS Chapter Bangkalan" };
+export const metadata = { title: "Daftar Calon Member" };
 
 export default function DaftarPage() {
   return (
@@ -25,6 +26,7 @@ export default function DaftarPage() {
           ← Kembali ke beranda
         </Link>
       </div>
+      <FabWa />
     </main>
   );
 }

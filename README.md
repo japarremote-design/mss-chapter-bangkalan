@@ -93,7 +93,7 @@ Hari/Tanggal : Jumat, 4 September 2026
 Jam      : *07.00 WIB - 08.30 WIB*
 Tempat : Kolam *Safira*
 HTM     : 10000 + Infaq Terbaik
-Kuota   : 15 orang (sisa 12)
+Kuota   : 15 orang
 
 …
 
@@ -104,7 +104,7 @@ https://…/ikut/xxx?k=xxx
 Perlengkapan yang Wajib Di Bawa…
 ```
 
-Bedanya dengan pesan manual: nomor 1–15 yang harus diketik member digantikan **satu link**. Sisa slot dihitung otomatis, jadi tidak ada lagi nama yang ketimpa ("ketik Otw dulu" tidak diperlukan lagi) dan tidak ada yang mendaftar melebihi kuota.
+Bedanya dengan pesan manual: nomor 1–15 yang harus diketik member digantikan **satu link**. Sisa slot sengaja tidak ditulis di pesan (pesan WA statis, sisa slot berubah terus) — angkanya hanya tampil di halaman ngelist yang selalu terbarui. Tidak ada lagi nama yang ketimpa ("ketik Otw dulu" tidak diperlukan lagi) dan tidak ada yang mendaftar melebihi kuota.
 
 Pembuka pesan, catatan penutup, dan HTM default diatur di `/admin/pengaturan`. Tulis `{JADWAL}` di pembuka untuk menyisipkan judul paket jadwal.
 
