@@ -16,6 +16,7 @@ type Sesi = {
   rsvpCount: number;
   open: boolean;
   full: boolean;
+  lewat?: boolean;
   names: string[];
 };
 type Week = { id: string; label: string; open: boolean };
@@ -292,6 +293,7 @@ function Ikut() {
               {sessions.map((s) => {
                 const ikut = joined.includes(s.id);
                 const penuh = s.quota > 0 && s.rsvpCount >= s.quota && !ikut;
+                const lewat = Boolean(s.lewat);
                 return (
                   <div key={s.id} className="panel p-4">
                     <div className="flex items-start gap-3">
@@ -317,7 +319,7 @@ function Ikut() {
                         </p>
                       </div>
                       <button
-                        disabled={busyId === s.id || (penuh && !ikut) || !s.open}
+                        disabled={busyId === s.id || lewat || (penuh && !ikut) || !s.open}
                         onClick={() => toggle(s)}
                         className={`btn ml-auto shrink-0 px-3 py-1.5 text-xs ${
                           ikut ? "btn-ghost" : "btn-primary"
@@ -325,14 +327,21 @@ function Ikut() {
                       >
                         {busyId === s.id
                           ? "…"
-                          : ikut
-                            ? "Batal ikut"
-                            : penuh
-                              ? "Penuh"
-                              : "Ikut"}
+                          : lewat
+                            ? "Sudah lewat"
+                            : ikut
+                              ? "Batal ikut"
+                              : penuh
+                                ? "Penuh"
+                                : "Ikut"}
                       </button>
                     </div>
-                    {ikut && (
+                    {lewat && (
+                      <p className="mt-3 rounded-lg bg-[var(--line)] p-2 text-center text-xs text-[var(--muted)]">
+                        Sesi ini sudah berlalu.
+                      </p>
+                    )}
+                    {ikut && !lewat && (
                       <p className="mt-3 rounded-lg bg-[var(--accent-soft)] p-2 text-center text-xs font-semibold text-[var(--accent)]">
                         ✓ Namamu sudah masuk daftar
                       </p>

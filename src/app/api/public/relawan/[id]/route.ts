@@ -2,6 +2,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
 import { listRsvp, sessionFromDoc } from "@/lib/data";
 import { currentToken, verifyLinkToken } from "@/lib/token";
+import { cekWaktuPresensi } from "@/lib/waktu";
 import type { AttendanceRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -27,8 +28,12 @@ export async function GET(req: Request, { params }: Ctx) {
     ]);
     if (!snap.exists) throw new HttpError(404, "Sesi tidak ditemukan.");
 
+    const sesi = sessionFromDoc(snap);
+    const waktu = cekWaktuPresensi(sesi.date, sesi.startTime ?? "");
+
     return Response.json({
-      session: sessionFromDoc(snap),
+      session: sesi,
+      waktu: waktu.boleh ? { boleh: true } : { boleh: false, pesan: waktu.pesan },
       attendance: attendance.docs.map((d) => d.data() as AttendanceRecord),
       rsvp,
       token: currentToken(id),

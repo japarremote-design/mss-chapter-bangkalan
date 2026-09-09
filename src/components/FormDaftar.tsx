@@ -27,10 +27,29 @@ const KOSONG = {
 
 type Field = keyof typeof KOSONG;
 
+const NAMA_FIELD: Record<Field, string> = {
+  name: "nama lengkap",
+  nickname: "nama panggilan",
+  age: "usia",
+  gender: "jenis kelamin",
+  religion: "agama",
+  address: "alamat domisili",
+  job: "pekerjaan",
+  maritalStatus: "status pernikahan",
+  canSwim: "sudah bisa berenang?",
+  waterTrauma: "trauma air",
+  healthNotes: "riwayat penyakit",
+  isSwimCoach: "pelatih renang?",
+  knowFrom: "kenal MSS melalui",
+  reason: "motivasi bergabung",
+  phone: "no. WhatsApp",
+  admin: "admin koordinasi",
+};
+
 const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
   {
     judul: "Kenalan dulu",
-    sub: "Data diri untuk administrasi keanggotaan.",
+    sub: "Data diri untuk pendataan member.",
     fields: ["name", "nickname", "age", "gender", "religion", "maritalStatus", "address", "job"],
   },
   {
@@ -56,10 +75,14 @@ export function FormDaftar() {
 
   const usiaKurang = form.age.trim() !== "" && Number(form.age) > 0 && Number(form.age) < 15;
 
-  const terisi = useMemo(
-    () => LANGKAH[step].fields.every((f) => form[f].trim() !== "") && !usiaKurang,
-    [form, step, usiaKurang]
+  // Isian yang masih kosong di langkah ini — disebutkan namanya supaya orang
+  // tidak bingung melihat tombol Lanjut yang mati tanpa penjelasan.
+  const kurang = useMemo(
+    () => LANGKAH[step].fields.filter((f) => form[f].trim() === "").map((f) => NAMA_FIELD[f]),
+    [form, step]
   );
+
+  const terisi = kurang.length === 0 && !usiaKurang;
 
   const progres = useMemo(() => {
     const semua = LANGKAH.flatMap((l) => l.fields);
@@ -269,7 +292,9 @@ export function FormDaftar() {
 
         {!terisi && (
           <p className="text-center text-xs text-[var(--muted)]">
-            Lengkapi semua isian di langkah ini untuk melanjutkan.
+            {usiaKurang
+              ? "Latihan MSS terbuka untuk usia 15 tahun ke atas."
+              : `Belum terisi: ${kurang.join(", ")}.`}
           </p>
         )}
       </form>

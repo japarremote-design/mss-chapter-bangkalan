@@ -58,7 +58,12 @@ function Scanner() {
           tone: "err",
           text,
           // Relawan pelatih boleh menimpa aturan "harus ngelist" kalau memang mengizinkan.
-          forceCode: text.includes("belum ngelist") ? code : undefined,
+          forceCode:
+            text.includes("belum ngelist") ||
+            text.includes("baru dibuka") ||
+            text.includes("sudah lewat")
+              ? code
+              : undefined,
         });
       }
     },

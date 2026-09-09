@@ -1,3 +1,4 @@
+import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError, requireAdmin } from "@/lib/auth";
 import { listRsvp, sessionFromDoc } from "@/lib/data";
@@ -59,11 +60,25 @@ export async function DELETE(req: Request, { params }: Ctx) {
   try {
     await requireAdmin(req);
     const { id } = await params;
-    const ref = adminDb().collection("sessions").doc(id);
-    const attendance = await ref.collection("attendance").get();
-    const batch = adminDb().batch();
+    const db = adminDb();
+    const ref = db.collection("sessions").doc(id);
+    const snap = await ref.get();
+    // Subkoleksi tidak ikut terhapus otomatis — daftar hadir dan daftar ikut
+    // harus dibersihkan sendiri supaya tidak jadi data yatim.
+    const [attendance, rsvp] = await Promise.all([
+      ref.collection("attendance").get(),
+      ref.collection("rsvp").get(),
+    ]);
+    const batch = db.batch();
     attendance.docs.forEach((d) => batch.delete(d.ref));
+    rsvp.docs.forEach((d) => batch.delete(d.ref));
     batch.delete(ref);
+    const weekId = snap.data()?.weekId;
+    if (weekId) {
+      batch.update(db.collection("weeks").doc(String(weekId)), {
+        sessionCount: FieldValue.increment(-1),
+      });
+    }
     await batch.commit();
     return Response.json({ ok: true });
   } catch (err) {

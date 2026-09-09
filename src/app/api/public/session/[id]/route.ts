@@ -14,7 +14,7 @@ export async function GET(req: Request, { params }: Ctx) {
     const { id } = await params;
     const token = new URL(req.url).searchParams.get("t") ?? "";
     if (!verifyToken(id, token)) {
-      throw new HttpError(401, "QR sudah kedaluwarsa. Silakan scan ulang di layar panitia.");
+      throw new HttpError(401, "QR sudah kedaluwarsa. Silakan scan ulang di layar relawan pelatih.");
     }
 
     const snap = await adminDb().collection("sessions").doc(id).get();

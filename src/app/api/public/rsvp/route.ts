@@ -1,6 +1,13 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { createUniqueCode, joinSession, leaveSession, memberFromDoc } from "@/lib/data";
+import {
+  cariNama,
+  createUniqueCode,
+  joinSession,
+  leaveSession,
+  memberFromDoc,
+  resetIndeksNama,
+} from "@/lib/data";
 import { verifyLinkToken } from "@/lib/token";
 
 export const runtime = "nodejs";
@@ -31,15 +38,9 @@ export async function POST(req: Request) {
 
     // 1. Cari nama untuk dipilih
     if (action === "cari") {
-      const q = String(body.q ?? "").trim().toLowerCase();
+      const q = String(body.q ?? "").trim();
       if (q.length < 2) return Response.json({ members: [] });
-      const snap = await db.collection("members").orderBy("name").get();
-      const members = snap.docs
-        .map(memberFromDoc)
-        .filter((m) => m.name.toLowerCase().includes(q))
-        .slice(0, 12)
-        .map((m) => ({ id: m.id, name: m.name, status: m.status }));
-      return Response.json({ members });
+      return Response.json({ members: await cariNama(q) });
     }
 
     // 2. Daftar baru untuk yang belum pernah terdaftar
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
         createdAt: new Date().toISOString(),
         source: "rsvp",
       });
+      resetIndeksNama();
       return Response.json({ member: { id: ref.id, name }, existing: false }, { status: 201 });
     }
 

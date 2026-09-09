@@ -2,6 +2,7 @@ import "server-only";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "./firebaseAdmin";
 import { HttpError } from "./auth";
+import { cekWaktuPresensi } from "./waktu";
 import type {
   AttendanceRecord,
   Member,
@@ -129,6 +130,11 @@ export async function joinSession(sessionId: string, memberId: string) {
 
     const session = sessionFromDoc(sessionSnap);
     if (rsvpSnap.exists) return { alreadyIn: true, session };
+
+    const waktu = cekWaktuPresensi(session.date, session.startTime ?? "");
+    if (!waktu.boleh && waktu.alasan === "lewat") {
+      throw new HttpError(409, "Sesi ini sudah lewat, tidak bisa ngelist lagi.");
+    }
     if (session.quota > 0 && session.rsvpCount >= session.quota) {
       throw new HttpError(409, "Kuota sesi ini sudah penuh.");
     }
@@ -207,6 +213,12 @@ export async function recordAttendance(opts: {
     const session = sessionFromDoc(sessionSnap);
     if (!session.open) throw new HttpError(409, "Presensi untuk sesi ini sudah ditutup.");
 
+    // Belum waktunya (atau sudah lewat) — kecuali relawan pelatih menimpanya.
+    if (!opts.force) {
+      const waktu = cekWaktuPresensi(session.date, session.startTime ?? "");
+      if (!waktu.boleh) throw new HttpError(409, waktu.pesan);
+    }
+
     const member = memberFromDoc(memberSnap);
 
     if (!rsvpSnap.exists && !opts.force) {
@@ -261,6 +273,42 @@ export async function recordAttendance(opts: {
 
     return { record, alreadyIn: false, promoted };
   });
+}
+
+/**
+ * Indeks nama untuk pencarian di halaman "ngelist".
+ *
+ * Firestore tidak punya pencarian "mengandung kata", jadi daftar nama dibaca
+ * lalu disaring di memori. Supaya tiap ketikan tidak membaca ratusan dokumen,
+ * hasilnya ditahan sebentar di memori server.
+ */
+const INDEKS_UMUR_MS = 60_000;
+let indeksNama: { at: number; data: { id: string; name: string; status: MemberStatus }[] } | null =
+  null;
+
+export async function cariNama(q: string, batas = 12) {
+  const now = Date.now();
+  if (!indeksNama || now - indeksNama.at > INDEKS_UMUR_MS) {
+    const snap = await adminDb().collection("members").select("name", "status").get();
+    indeksNama = {
+      at: now,
+      data: snap.docs.map((d) => ({
+        id: d.id,
+        name: String(d.get("name") ?? ""),
+        status: (d.get("status") as MemberStatus) ?? "calon",
+      })),
+    };
+  }
+  const kunci = q.trim().toLowerCase();
+  return indeksNama.data
+    .filter((m) => m.name.toLowerCase().includes(kunci))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, batas);
+}
+
+/** Dipanggil setelah ada member baru supaya indeks tidak basi. */
+export function resetIndeksNama() {
+  indeksNama = null;
 }
 
 export function scheduleFromDoc(

@@ -76,13 +76,23 @@ export async function POST(req: Request) {
     };
 
     // Sesi yang sudah ada di tanggal-tanggal ini — untuk mendeteksi slot kembar.
-    const existing = await db.collection("sessions").where("date", "in", [...new Set(dates)].slice(0, 10)).get();
+    // Query "in" dibatasi 30 nilai, jadi tanggalnya dipecah per 30.
+    const unik = [...new Set(dates)];
+    const potongan: string[][] = [];
+    for (let i = 0; i < unik.length; i += 30) potongan.push(unik.slice(i, i + 30));
+    const hasilQuery = await Promise.all(
+      potongan.map((p) => db.collection("sessions").where("date", "in", p).get())
+    );
+    const existing = hasilQuery.flatMap((q) => q.docs);
 
     const batch = db.batch();
     batch.set(weekRef, week);
 
     let dibuat = 0;
     const digabung: string[] = [];
+    // Slot yang dibuat di permintaan ini — supaya dua baris dengan slot sama
+    // di satu form juga digabung, bukan jadi dua sesi terpisah.
+    const baru: { kunci: string; ref: FirebaseFirestore.DocumentReference; coaches: string[] }[] = [];
 
     for (const row of valid) {
       const date = String(row.date);
@@ -97,7 +107,24 @@ export async function POST(req: Request) {
         .filter(Boolean);
 
       // Hari, jam, dan kolam yang sama = satu latihan dengan beberapa relawan pelatih.
-      const kembar = existing.docs.find((d) => {
+      const kunci = `${date}|${normalisasi(startTime)}|${normalisasi(location)}`;
+      const label = `${date}${startTime ? ` ${startTime}` : ""}${location ? ` di ${location}` : ""}`;
+
+      // (a) kembar dengan baris lain di form yang sama
+      const kembarBaru = baru.find((b) => b.kunci === kunci);
+      if (kembarBaru) {
+        for (const c of coachList) {
+          if (!kembarBaru.coaches.some((x) => normalisasi(x) === normalisasi(c))) {
+            kembarBaru.coaches.push(c);
+          }
+        }
+        batch.update(kembarBaru.ref, { coaches: kembarBaru.coaches });
+        digabung.push(label);
+        continue;
+      }
+
+      // (b) kembar dengan sesi yang sudah tersimpan sebelumnya
+      const kembar = existing.find((d) => {
         const v = d.data();
         return (
           v.date === date &&
@@ -114,14 +141,17 @@ export async function POST(req: Request) {
         for (const c of coachList) {
           if (!gabungan.some((x) => normalisasi(x) === normalisasi(c))) gabungan.push(c);
         }
-        if (gabungan.length !== sebelumnya.length) {
-          batch.update(kembar.ref, { coaches: gabungan });
-        }
-        digabung.push(`${date}${startTime ? ` ${startTime}` : ""}${location ? ` di ${location}` : ""}`);
+        // Sesi lama ikut dipindah ke paket jadwal yang baru dishare, supaya
+        // link minggu ini memuat semua latihan — RSVP yang sudah ada tetap aman.
+        batch.update(kembar.ref, { coaches: gabungan, weekId: weekRef.id });
+        baru.push({ kunci, ref: kembar.ref, coaches: gabungan });
+        digabung.push(label);
+        dibuat++;
         continue;
       }
 
       const ref = db.collection("sessions").doc();
+      baru.push({ kunci, ref, coaches: [...coachList] });
       batch.set(ref, {
         title: String(row.title ?? "").trim() || "Latihan Rutin",
         date,
@@ -140,13 +170,7 @@ export async function POST(req: Request) {
       dibuat++;
     }
 
-    if (dibuat === 0) {
-      // Semua baris ternyata kembar — tidak perlu paket jadwal baru.
-      throw new HttpError(
-        409,
-        `Semua sesi sudah ada di jadwal lain (${digabung.join(", ")}). Nama relawan pelatih tidak jadi ditambahkan; buka sesi yang sudah ada untuk mengubahnya.`
-      );
-    }
+    if (dibuat === 0) throw new HttpError(400, "Tidak ada sesi yang bisa dibuat.");
 
     batch.update(weekRef, { sessionCount: dibuat });
     await batch.commit();

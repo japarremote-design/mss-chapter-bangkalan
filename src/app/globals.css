@@ -130,6 +130,9 @@ body {
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+  /* Wadahnya lebih lebar dari tombolnya; tanpa ini area kosong di sekitar
+     tombol ikut menutupi tautan di bawahnya (mis. "Masuk pengurus"). */
+  pointer-events: none;
 }
 
 .fab-tombol {
@@ -146,6 +149,7 @@ body {
   box-shadow: 0 8px 22px rgba(16, 49, 76, 0.28);
   transition: transform 0.18s ease, background 0.18s ease;
   animation: fab-kedip 2.4s ease-in-out infinite;
+  pointer-events: auto;
 }
 .fab-tombol:hover { transform: scale(1.06); }
 .fab-tombol:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }

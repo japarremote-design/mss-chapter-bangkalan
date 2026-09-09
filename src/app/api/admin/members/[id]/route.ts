@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError, requireAdmin } from "@/lib/auth";
-import { memberFromDoc } from "@/lib/data";
+import { memberFromDoc, resetIndeksNama } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
     const ref = adminDb().collection("members").doc(id);
     await ref.update(patch);
+    resetIndeksNama();
     const snap = await ref.get();
     return Response.json({ member: memberFromDoc(snap) });
   } catch (err) {
@@ -34,6 +35,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
     await requireAdmin(req);
     const { id } = await params;
     await adminDb().collection("members").doc(id).delete();
+    resetIndeksNama();
     return Response.json({ ok: true });
   } catch (err) {
     return errorResponse(err);

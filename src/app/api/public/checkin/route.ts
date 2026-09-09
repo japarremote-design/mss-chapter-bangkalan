@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const sessionId = String(body.sessionId ?? "");
     const token = String(body.token ?? "");
     if (!verifyToken(sessionId, token)) {
-      throw new HttpError(401, "QR sudah kedaluwarsa. Scan ulang di layar panitia.");
+      throw new HttpError(401, "QR sudah kedaluwarsa. Scan ulang di layar relawan pelatih.");
     }
 
     const memberId = String(body.memberId ?? "").trim();

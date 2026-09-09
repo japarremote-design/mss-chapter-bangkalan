@@ -21,7 +21,13 @@ function Member() {
   const [filter, setFilter] = useState<"semua" | MemberStatus>("semua");
   const [q, setQ] = useState("");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", phone: "", address: "", note: "" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    note: "",
+    status: "calon" as MemberStatus,
+  });
   const [busy, setBusy] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [buka, setBuka] = useState("");
@@ -56,7 +62,7 @@ function Member() {
         body: JSON.stringify(form),
       });
       setMembers((prev) => [...prev, d.member].sort((a, b) => a.name.localeCompare(b.name)));
-      setForm({ name: "", phone: "", address: "", note: "" });
+      setForm({ name: "", phone: "", address: "", note: "", status: "calon" });
       setShowForm(false);
     } catch (err) {
       setError((err as Error).message);
@@ -108,6 +114,19 @@ function Member() {
           `Satu langkah lagi: lengkapi pendataan MSS Pusat lewat tautan ini ya (isian sudah otomatis terisi):\n${d.url}`
       );
       window.open(wa ? `https://wa.me/${wa}?text=${teks}` : `https://wa.me/?text=${teks}`, "_blank");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
+  async function ubahStatus(m: Member) {
+    const baru: MemberStatus = m.status === "member" ? "calon" : "member";
+    try {
+      const d = await api<{ member: Member }>(`/api/admin/members/${m.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: baru }),
+      });
+      setMembers((prev) => prev.map((x) => (x.id === m.id ? d.member : x)));
     } catch (err) {
       setError((err as Error).message);
     }
@@ -185,13 +204,35 @@ function Member() {
             />
           </div>
           <div className="sm:col-span-2">
-            <button disabled={busy} className="btn btn-primary">
-              {busy ? "Menyimpan…" : "Simpan sebagai calon member"}
-            </button>
+            <label className="label">Status</label>
+            <div className="flex flex-wrap gap-2">
+              {(["calon", "member"] as const).map((st) => (
+                <button
+                  type="button"
+                  key={st}
+                  onClick={() => setForm({ ...form, status: st })}
+                  className={`btn px-4 py-2 text-sm ${
+                    form.status === st ? "btn-primary" : "btn-ghost"
+                  }`}
+                >
+                  {st === "calon" ? "Calon member" : "Member"}
+                </button>
+              ))}
+            </div>
             <p className="mt-2 text-xs text-[var(--muted)]">
-              Status naik otomatis jadi <b>member</b> begitu yang bersangkutan tercatat hadir di
-              latihan pertamanya.
+              Pilih <b>Member</b> untuk yang sudah pernah ikut latihan. Calon member naik sendiri
+              jadi member begitu kehadiran latihan pertamanya tercatat.
             </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <button disabled={busy} className="btn btn-primary">
+              {busy
+                ? "Menyimpan…"
+                : form.status === "member"
+                  ? "Simpan sebagai member"
+                  : "Simpan sebagai calon member"}
+            </button>
           </div>
         </form>
       )}
@@ -313,6 +354,17 @@ function Member() {
                       <Baris label="Provinsi" value={m.province} />
                       <Baris label="Catatan pengurus" value={m.note} />
                     </dl>
+
+                    <div className="mt-3 border-t border-[var(--line)] pt-3">
+                      <button
+                        onClick={() => ubahStatus(m)}
+                        className="btn btn-ghost px-3 py-1 text-xs"
+                      >
+                        {m.status === "member"
+                          ? "Turunkan jadi calon member"
+                          : "Jadikan member sekarang"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )}

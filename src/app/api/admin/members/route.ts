@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError, requireAdmin } from "@/lib/auth";
-import { createUniqueCode, memberFromDoc } from "@/lib/data";
+import { createUniqueCode, memberFromDoc, resetIndeksNama } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,13 +32,14 @@ export async function POST(req: Request) {
       job: String(body.job ?? "").trim(),
       reason: String(body.reason ?? "").trim(),
       note: String(body.note ?? "").trim(),
-      status: "calon" as const,
+      status: body.status === "member" ? ("member" as const) : ("calon" as const),
       attendanceCount: 0,
       firstAttendedAt: null,
       lastAttendedAt: null,
       createdAt: now,
     };
     const ref = await adminDb().collection("members").add(doc);
+    resetIndeksNama();
     return Response.json({ member: { id: ref.id, ...doc } }, { status: 201 });
   } catch (err) {
     return errorResponse(err);

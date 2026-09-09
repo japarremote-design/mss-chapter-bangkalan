@@ -19,28 +19,13 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
-  try {
-    const admin = await requireAdmin(req);
-    const body = await req.json();
-    const title = String(body.title ?? "").trim();
-    const date = String(body.date ?? "").trim();
-    if (!title) throw new HttpError(400, "Judul latihan wajib diisi.");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, "Tanggal tidak valid.");
-
-    const doc = {
-      title,
-      date,
-      startTime: String(body.startTime ?? "").trim(),
-      location: String(body.location ?? "").trim(),
-      open: true,
-      attendeeCount: 0,
-      createdAt: new Date().toISOString(),
-      createdBy: admin.email,
-    };
-    const ref = await adminDb().collection("sessions").add(doc);
-    return Response.json({ session: { id: ref.id, ...doc } }, { status: 201 });
-  } catch (err) {
-    return errorResponse(err);
-  }
+/**
+ * Sesi tidak dibuat satu per satu di sini. Semuanya lahir dari paket jadwal
+ * mingguan (/api/admin/weeks) supaya selalu punya weekId — tanpa itu sesinya
+ * tidak muncul di link "ngelist" dan kehadirannya tidak bisa dicatat.
+ */
+export async function POST() {
+  return errorResponse(
+    new HttpError(405, "Buat sesi lewat menu Jadwal Mingguan, bukan satu per satu.")
+  );
 }

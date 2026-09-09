@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { createUniqueCode } from "@/lib/data";
+import { createUniqueCode, resetIndeksNama } from "@/lib/data";
 import { preflight, withCors } from "@/lib/cors";
 
 export const runtime = "nodejs";
@@ -65,6 +65,8 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString(),
       source: teks(body.source) || "web",
     });
+
+    resetIndeksNama();
 
     return withCors(
       req,

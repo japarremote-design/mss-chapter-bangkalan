@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError, requireAdmin } from "@/lib/auth";
-import { generateCode } from "@/lib/data";
+import { generateCode, resetIndeksNama } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -106,7 +106,10 @@ export async function POST(req: Request) {
       masuk++;
     }
 
-    if (masuk > 0) await batch.commit();
+    if (masuk > 0) {
+      await batch.commit();
+      resetIndeksNama();
+    }
 
     return Response.json({ masuk, dilewati });
   } catch (err) {

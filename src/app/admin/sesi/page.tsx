@@ -298,7 +298,7 @@ function Sesi() {
         <p className="text-xs text-[var(--muted)]">
           Kuota dikosongkan = tanpa batas peserta. Kalau tanggal, jam, dan kolamnya sama persis
           dengan sesi yang sudah ada, sistem menganggapnya satu latihan dan hanya menambahkan nama
-          pelatihnya.
+          relawan pelatihnya.
         </p>
       </form>
 

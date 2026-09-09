@@ -22,6 +22,7 @@ Situs publik lama (Apps Script + Blogger) sudah digabung ke sini: hero, keunggul
 - **Presensi QR mode A (member yang scan)** — layar pengurus menampilkan QR yang **berganti tiap 20 detik** (ditandatangani HMAC), jadi screenshot lama tidak bisa dipakai titip absen. Member scan → cari nama → hadir.
 - **Presensi QR mode B (pengurus yang scan)** — tiap member punya kartu QR sendiri (`/kartu/MSS-XXXXXX`, bisa dicetak). Pengurus buka scanner di HP dan memindai satu per satu. Ada juga input kode manual kalau kamera bermasalah.
 - **Anti dobel** — satu orang hanya tercatat sekali per sesi (transaksi Firestore).
+- **Jendela waktu presensi** — QR hanya berlaku pada hari sesi itu, dari 1 jam sebelum jam mulai sampai 2 jam setelah jam selesai (WIB). Di luar itu peserta ditolak; relawan pelatih tetap bisa menimpa lewat "Tetap catat hadir". Kalau kolom jam dikosongkan, berlaku sepanjang hari tersebut.
 - Rekap hadir realtime + **unduh CSV** per sesi.
 - **Jadwal latihan** dikelola pengurus di `/admin/jadwal`, tampil di beranda, dan tersedia sebagai API publik untuk situs Blogger.
 - **Formulir pendaftaran calon member** — 15 isian sesuai formulir MSS (nama lengkap & panggilan, usia, jenis kelamin, agama, alamat, pekerjaan, status pernikahan, sudah bisa berenang, trauma air, riwayat penyakit, pelatih renang atau bukan, kenal MSS dari mana, motivasi, no WA, pilih admin). Google Form tidak lagi diperlukan.
@@ -43,6 +44,11 @@ Yang **tidak** bisa dilakukan dari link itu: melihat atau mengubah data member l
 ## Dua relawan pelatih di slot yang sama
 
 Kalau tanggal, jam, dan kolamnya **sama persis**, sistem menganggapnya **satu latihan dengan beberapa relawan pelatih**: sesi tidak diduplikasi, nama relawan pelatih baru ditambahkan ke sesi yang sudah ada, dan admin diberi tahu bahwa slotnya digabung. Peserta ngelist sekali, presensi masuk ke satu daftar, dan kedua relawan pelatih memakai link yang sama.
+
+Penggabungan berlaku untuk dua hal sekaligus:
+
+1. **Dua baris di form yang sama** — mengisi slot yang sama dua kali dalam satu paket jadwal tetap menghasilkan satu sesi.
+2. **Sesi yang sudah tersimpan sebelumnya** — sesi lama ikut dipindahkan ke paket jadwal yang baru dishare, supaya link minggu ini memuat semua latihan. Daftar ikut dan daftar hadir yang sudah ada tetap utuh.
 
 Kalau memang ingin dua kelompok terpisah di jam yang sama, bedakan salah satu kolomnya — misalnya tulis kolam sebagai "Kolam Syariah (kelompok A)" dan "Kolam Syariah (kelompok B)".
 
@@ -217,6 +223,8 @@ sessions/{id}
   quota           // 0 = tanpa batas
   open            boolean
   attendeeCount, rsvpCount, createdAt, createdBy
+
+// Jendela waktu presensi dihitung di src/lib/waktu.ts dari kolom date + startTime.
 
 sessions/{id}/rsvp/{memberId}
   memberId, code, name, at, attended

@@ -8,6 +8,7 @@ import type { AttendanceRecord, RsvpEntry, TrainingSession } from "@/lib/types";
 
 type Payload = {
   session: TrainingSession;
+  waktu?: { boleh: boolean; pesan?: string };
   attendance: AttendanceRecord[];
   rsvp: RsvpEntry[];
   token: string;
@@ -91,7 +92,13 @@ function Relawan() {
         setHasil({
           tone: "err",
           text,
-          forceCode: text.includes("belum ngelist") ? code : undefined,
+          // Boleh ditimpa relawan pelatih: belum ngelist, atau di luar jam sesi.
+          forceCode:
+            text.includes("belum ngelist") ||
+            text.includes("baru dibuka") ||
+            text.includes("sudah lewat")
+              ? code
+              : undefined,
         });
       }
     },
@@ -141,7 +148,7 @@ function Relawan() {
   }
   if (!data) return <Center>Memuat…</Center>;
 
-  const { session, attendance, rsvp, token } = data;
+  const { session, attendance, rsvp, token, waktu } = data;
   const hadirIds = new Set(attendance.map((a) => a.memberId));
   const belumHadir = rsvp.filter((r) => !hadirIds.has(r.memberId));
   const checkinUrl = `${origin}/a/${session.id}?t=${token}`;
@@ -186,6 +193,17 @@ function Relawan() {
             {session.open ? "DIBUKA" : "DITUTUP"}
           </span>
         </div>
+
+        {waktu && !waktu.boleh && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="font-semibold">Di luar jam presensi</p>
+            <p className="mt-1">{waktu.pesan}</p>
+            <p className="mt-1 text-xs">
+              Peserta belum bisa scan sendiri. Kalau latihan memang berjalan sekarang, pakai tab
+              Scan kartu lalu tekan &quot;Tetap catat hadir&quot;.
+            </p>
+          </div>
+        )}
 
         <div className="flex gap-2">
           {(["qr", "scan"] as const).map((t) => (

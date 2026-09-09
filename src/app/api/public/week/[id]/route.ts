@@ -2,6 +2,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
 import { listRsvp, sessionFromDoc, weekFromDoc } from "@/lib/data";
 import { verifyLinkToken } from "@/lib/token";
+import { cekWaktuPresensi } from "@/lib/waktu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,12 @@ export async function GET(req: Request, { params }: Ctx) {
         rsvpCount: s.rsvpCount,
         open: s.open,
         full: s.quota > 0 && s.rsvpCount >= s.quota,
+        // Sesi yang harinya sudah terlewat tidak bisa di-list lagi.
+        lewat:
+          (() => {
+            const w = cekWaktuPresensi(s.date, s.startTime ?? "");
+            return !w.boleh && w.alasan === "lewat";
+          })(),
         // Daftar nama sengaja ditampilkan, meniru kebiasaan list di grup WhatsApp.
         names: (await listRsvp(s.id)).map((r) => r.name),
       }))
