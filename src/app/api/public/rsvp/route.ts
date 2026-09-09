@@ -1,13 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import {
-  cariNama,
-  createUniqueCode,
-  joinSession,
-  leaveSession,
-  memberFromDoc,
-  resetIndeksNama,
-} from "@/lib/data";
+import { cariNama, joinSession, leaveSession } from "@/lib/data";
 import { verifyLinkToken } from "@/lib/token";
 
 export const runtime = "nodejs";
@@ -34,7 +27,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const weekId = await guard(body);
     const action = String(body.action ?? "");
-    const db = adminDb();
 
     // 1. Cari nama untuk dipilih
     if (action === "cari") {
@@ -43,40 +35,17 @@ export async function POST(req: Request) {
       return Response.json({ members: await cariNama(q) });
     }
 
-    // 2. Daftar baru untuk yang belum pernah terdaftar
+    // Jalan pintas "daftar cukup nama + nomor" sengaja ditutup: yang ngelist
+    // harus sudah terdata lengkap lewat formulir pendaftaran, supaya relawan
+    // pelatih tahu riwayat kesehatan dan kemampuan renangnya sebelum di kolam.
     if (action === "daftar-baru") {
-      const name = String(body.name ?? "").trim();
-      const phone = String(body.phone ?? "").trim();
-      if (name.length < 2) throw new HttpError(400, "Nama wajib diisi.");
-      if (phone.replace(/\D/g, "").length < 8) throw new HttpError(400, "Nomor WhatsApp wajib diisi.");
-
-      const dup = await db.collection("members").where("phone", "==", phone).limit(1).get();
-      if (!dup.empty) {
-        const m = memberFromDoc(dup.docs[0]);
-        return Response.json({ member: { id: m.id, name: m.name }, existing: true });
-      }
-
-      const code = await createUniqueCode();
-      const ref = await db.collection("members").add({
-        code,
-        name,
-        phone,
-        address: "",
-        job: "",
-        reason: "",
-        note: "",
-        status: "calon",
-        attendanceCount: 0,
-        firstAttendedAt: null,
-        lastAttendedAt: null,
-        createdAt: new Date().toISOString(),
-        source: "rsvp",
-      });
-      resetIndeksNama();
-      return Response.json({ member: { id: ref.id, name }, existing: false }, { status: 201 });
+      throw new HttpError(
+        403,
+        "Namamu belum terdata. Isi dulu formulir pendaftaran di halaman utama, lalu buka kembali link jadwal ini."
+      );
     }
 
-    // 3. Ikut / batal ikut satu sesi
+    // 2. Ikut / batal ikut satu sesi
     const memberId = String(body.memberId ?? "").trim();
     const sessionId = String(body.sessionId ?? "").trim();
     if (!memberId || !sessionId) throw new HttpError(400, "Data tidak lengkap.");

@@ -60,8 +60,6 @@ function Ikut() {
   const [me, setMe] = useState<{ id: string; name: string } | null>(null);
   const [q, setQ] = useState("");
   const [kandidat, setKandidat] = useState<Kandidat[]>([]);
-  const [modeBaru, setModeBaru] = useState(false);
-  const [baru, setBaru] = useState({ name: "", phone: "" });
 
   const post = useCallback(
     async (payload: Record<string, unknown>) => {
@@ -176,88 +174,57 @@ function Ikut() {
           </div>
         </div>
 
-        {/* Langkah 1: siapa kamu */}
+        {/* Langkah 1: siapa kamu — hanya yang sudah terdata yang bisa ngelist */}
         {!me ? (
           <div className="panel p-5">
-            <p className="mb-3 text-sm font-semibold">Siapa nama kamu?</p>
-            {!modeBaru ? (
-              <>
-                <input
-                  autoFocus
-                  className="field"
-                  placeholder="Ketik nama, minimal 2 huruf…"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                />
-                <ul className="mt-2 divide-y divide-[var(--line)]">
-                  {kandidat.map((k) => (
-                    <li key={k.id}>
-                      <button
-                        onClick={() => pilihSaya(k)}
-                        className="flex w-full items-center gap-2 py-2.5 text-left hover:text-[var(--accent)]"
-                      >
-                        <span className="font-medium">{k.name}</span>
-                        <span
-                          className={`badge ml-auto ${
-                            k.status === "member" ? "badge-member" : "badge-calon"
-                          }`}
-                        >
-                          {k.status === "member" ? "MEMBER" : "CALON"}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                  {q.trim().length >= 2 && kandidat.length === 0 && (
-                    <li className="py-2.5 text-sm text-[var(--muted)]">Nama tidak ditemukan.</li>
-                  )}
-                </ul>
-                <button onClick={() => setModeBaru(true)} className="btn btn-ghost mt-3 w-full">
-                  Belum pernah terdaftar? Isi data di sini
-                </button>
-              </>
-            ) : (
-              <form
-                className="space-y-3"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setError("");
-                  try {
-                    const d = await post({ action: "daftar-baru", ...baru });
-                    pilihSaya(d.member);
-                  } catch (err) {
-                    setError((err as Error).message);
-                  }
-                }}
-              >
-                <div>
-                  <label className="label">Nama lengkap</label>
-                  <input
-                    required
-                    className="field"
-                    value={baru.name}
-                    onChange={(e) => setBaru({ ...baru, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="label">Nomor WhatsApp</label>
-                  <input
-                    required
-                    inputMode="tel"
-                    className="field"
-                    value={baru.phone}
-                    onChange={(e) => setBaru({ ...baru, phone: e.target.value })}
-                  />
-                </div>
-                <button className="btn btn-primary w-full">Simpan &amp; lanjut</button>
-                <button
-                  type="button"
-                  onClick={() => setModeBaru(false)}
-                  className="btn btn-ghost w-full"
-                >
-                  Kembali ke pencarian nama
-                </button>
-              </form>
+            <p className="mb-1 text-sm font-semibold">Siapa nama kamu?</p>
+            <p className="mb-3 text-xs text-[var(--muted)]">
+              Ketik nama seperti yang kamu tulis waktu mendaftar.
+            </p>
+            <input
+              autoFocus
+              className="field"
+              placeholder="Ketik nama, minimal 2 huruf…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <ul className="mt-2 divide-y divide-[var(--line)]">
+              {kandidat.map((k) => (
+                <li key={k.id}>
+                  <button
+                    onClick={() => pilihSaya(k)}
+                    className="flex w-full items-center gap-2 py-2.5 text-left hover:text-[var(--accent)]"
+                  >
+                    <span className="font-medium">{k.name}</span>
+                    <span
+                      className={`badge ml-auto ${
+                        k.status === "member" ? "badge-member" : "badge-calon"
+                      }`}
+                    >
+                      {k.status === "member" ? "MEMBER" : "CALON"}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {q.trim().length >= 2 && kandidat.length === 0 && (
+              <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                <p className="font-semibold">Namamu belum ada di data MSS.</p>
+                <p className="mt-1 text-xs">
+                  Daftar dulu sebentar (sekitar 2 menit), lalu buka kembali link jadwal ini untuk
+                  ngelist. Data ini dipakai relawan pelatih supaya tahu cara mendampingimu di kolam.
+                </p>
+                <a href="/daftar" target="_blank" rel="noopener noreferrer" className="btn btn-primary mt-3 w-full">
+                  Daftar dulu di sini →
+                </a>
+                <p className="mt-2 text-xs">
+                  Sudah pernah daftar tapi tidak ketemu? Coba ejaan lain, atau hubungi relawan
+                  pelatih untuk dicarikan.
+                </p>
+              </div>
             )}
+
             {error && <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>}
           </div>
         ) : (

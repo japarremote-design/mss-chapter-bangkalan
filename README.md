@@ -9,7 +9,7 @@ Situs publik lama (Apps Script + Blogger) sudah digabung ke sini: hero, keunggul
 1. **Senin — relawan pelatih buat jadwal.** Di `/admin/sesi`, isi beberapa baris sekaligus (tanggal, jam, kolam, kuota opsional) lalu simpan. Sistem membuat satu paket jadwal berisi semua sesi minggu itu.
 2. **Share ke grup WhatsApp.** Tekan **Share ke WhatsApp** — pesan otomatis tersusun berisi daftar sesi + satu link. Bisa juga **Salin link**.
 3. **Dua grup WhatsApp.** Link yang sama dishare ke grup calon member dan grup member. Di daftar relawan pelatih, tiap nama diberi label CALON / MEMBER lengkap dengan hitungannya.
-4. **Calon member ngelist.** Buka link → cari namanya (atau isi nama + WA kalau belum terdaftar) → pilih sesi mana saja yang mau diikuti. Bisa batal ikut selama belum hadir. Pilihan "siapa saya" tersimpan di HP-nya, jadi minggu depan tinggal pilih sesi.
+4. **Calon member ngelist.** Buka link → cari namanya → pilih sesi mana saja yang mau diikuti. Bisa batal ikut selama belum hadir. Pilihan "siapa saya" tersimpan di HP-nya, jadi minggu depan tinggal pilih sesi. **Hanya nama yang sudah terdata di sistem yang bisa ngelist** — kalau tidak ketemu, orangnya diarahkan mengisi formulir pendaftaran dulu (lihat di bawah).
 5. **Hari-H — presensi.** Relawan pelatih membuka **link relawan pelatih** untuk sesi itu di HP-nya (tanpa akun) untuk menampilkan QR atau memindai kartu; peserta scan. **Hanya yang sudah ngelist yang bisa presensi**; yang belum ngelist ditolak dengan pesan jelas. Relawan pelatih tetap bisa menimpa lewat tombol "Tetap catat hadir" di mode scan kartu.
 6. **Rekap.** Detail sesi menampilkan siapa yang hadir dan siapa yang ngelist tapi tidak datang. CSV berisi kedua kolom itu.
 
@@ -17,7 +17,8 @@ Situs publik lama (Apps Script + Blogger) sudah digabung ke sini: hero, keunggul
 
 - **Calon member vs member** — pendaftar baru berstatus `calon`; status naik **otomatis** jadi `member` begitu kehadiran latihan pertamanya tercatat.
 - **Jadwal mingguan sekali buat** — beberapa sesi dalam satu form, menghasilkan satu link share untuk grup WhatsApp.
-- **Daftar ikut (RSVP)** — peserta memilih sesi lewat link. Kuota per sesi opsional; kalau penuh, tombol ikut otomatis mati.
+- **Daftar ikut (RSVP)** — peserta memilih sesi lewat link. Kuota per sesi opsional; kalau penuh, tombol ikut otomatis mati. Sesi yang harinya sudah lewat ditandai "Sudah lewat" dan tidak bisa di-list.
+- **Harus terdata dulu** — ngelist hanya bisa untuk nama yang sudah ada di database. Tidak ada jalan pintas "cukup nama + nomor": aturannya ditegakkan di halaman **dan** di API, jadi tidak bisa dilewati. Alasannya, relawan pelatih perlu tahu riwayat kesehatan, trauma air, dan kemampuan renang seseorang sebelum dia masuk kolam.
 - **Presensi wajib ngelist dulu** — yang tidak ada di daftar ditolak saat scan, dengan opsi timpa manual untuk relawan pelatih.
 - **Presensi QR mode A (member yang scan)** — layar pengurus menampilkan QR yang **berganti tiap 20 detik** (ditandatangani HMAC), jadi screenshot lama tidak bisa dipakai titip absen. Member scan → cari nama → hadir.
 - **Presensi QR mode B (pengurus yang scan)** — tiap member punya kartu QR sendiri (`/kartu/MSS-XXXXXX`, bisa dicetak). Pengurus buka scanner di HP dan memindai satu per satu. Ada juga input kode manual kalau kamera bermasalah.

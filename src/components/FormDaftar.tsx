@@ -348,7 +348,13 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           </a>
         </div>
 
-        <p className="mt-4 text-xs text-[var(--muted)]">
+        <p className="mt-4 rounded-xl bg-[var(--accent-soft)] p-3 text-xs text-[var(--muted)]">
+          <b className="text-[var(--ink)]">Datang ke sini dari link jadwal?</b> Namamu sekarang
+          sudah terdata — buka lagi link jadwal itu, ketik namamu, lalu pilih sesi yang mau kamu
+          ikuti.
+        </p>
+
+        <p className="mt-3 text-xs text-[var(--muted)]">
           Jadwal latihan tiap pekan dibagikan di grup calon member — dari situ kamu ngelist mau ikut
           sesi yang mana. Statusmu naik jadi <b>member</b> setelah hadir di latihan pertama.
         </p>
