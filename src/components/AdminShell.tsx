@@ -8,6 +8,7 @@ import { useAdmin } from "./useAdmin";
 const NAV = [
   { href: "/admin", label: "Dasbor" },
   { href: "/admin/sesi", label: "Sesi Latihan" },
+  { href: "/admin/verifikasi", label: "Verifikasi" },
   { href: "/admin/member", label: "Member" },
   { href: "/admin/jadwal", label: "Jadwal" },
   { href: "/admin/pusat", label: "MSS Pusat" },

@@ -112,7 +112,7 @@ function Pengaturan() {
             onChange={(e) => setForm({ ...form, waGroupMember: e.target.value })}
           />
           <p className="mt-1 text-xs text-[var(--muted)]">
-            Ditawarkan begitu seseorang naik status jadi member setelah latihan perdananya.
+            Dipakai pengurus di menu Member untuk mengirim link ini secara manual, setelah mengonfirmasi member baru yang sudah ikut latihan perdananya.
           </p>
         </div>
 

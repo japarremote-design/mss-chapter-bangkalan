@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
     const body = await req.json();
     const name = String(body.name ?? "").trim();
     if (!name) throw new HttpError(400, "Nama wajib diisi.");
@@ -33,6 +33,16 @@ export async function POST(req: Request) {
       reason: String(body.reason ?? "").trim(),
       note: String(body.note ?? "").trim(),
       status: body.status === "member" ? ("member" as const) : ("calon" as const),
+      // Ditambahkan langsung oleh pengurus, berarti sudah lewat screening.
+      verifikasi: "disetujui" as const,
+      verifikasiAt: now,
+      verifikasiBy: admin.email,
+      verifikasiCatatan: "Ditambahkan langsung oleh pengurus.",
+      // Kalau langsung dimasukkan berstatus member, anggap pengurus sudah tahu
+      // dan menanganinya sendiri — gerbang konfirmasi grup hanya untuk member
+      // yang naik status otomatis lewat presensi (scan QR sendiri, tanpa pengurus).
+      grupMemberDikirimAt: body.status === "member" ? now : null,
+      grupMemberDikirimBy: body.status === "member" ? admin.email : "",
       attendanceCount: 0,
       firstAttendedAt: null,
       lastAttendedAt: null,

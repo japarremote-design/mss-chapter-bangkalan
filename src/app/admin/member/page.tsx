@@ -32,12 +32,16 @@ function Member() {
   const [showForm, setShowForm] = useState(false);
   const [buka, setBuka] = useState("");
   const [showImpor, setShowImpor] = useState(false);
+  const [grupMember, setGrupMember] = useState("");
 
   useEffect(() => {
     if (!user) return;
     api<{ members: Member[] }>("/api/admin/members")
       .then((d) => setMembers(d.members))
       .catch((e) => setError(e.message));
+    api<{ settings: { waGroupMember: string } }>("/api/admin/pengaturan")
+      .then((d) => setGrupMember(d.settings.waGroupMember))
+      .catch(() => {});
   }, [user, api]);
 
   const shown = useMemo(() => {
@@ -114,6 +118,29 @@ function Member() {
           `Satu langkah lagi: lengkapi pendataan MSS Pusat lewat tautan ini ya (isian sudah otomatis terisi):\n${d.url}`
       );
       window.open(wa ? `https://wa.me/${wa}?text=${teks}` : `https://wa.me/?text=${teks}`, "_blank");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
+  /** Buka WhatsApp dengan link grup member sudah tertempel, siap kirim. */
+  function bukaChatGrupMember(m: Member) {
+    const wa = m.phone ? m.phone.replace(/\D/g, "").replace(/^0/, "62") : "";
+    const link = grupMember || "(link grup belum diisi pengurus di menu Pengaturan)";
+    const teks = encodeURIComponent(
+      `Assalamualaikum ${m.name}, terima kasih sudah ikut latihan pertama bersama MSS Bangkalan! ` +
+        `Kamu sudah dikonfirmasi jadi member. Silakan gabung grup WhatsApp Member lewat link ini ya:\n${link}`
+    );
+    window.open(wa ? `https://wa.me/${wa}?text=${teks}` : `https://wa.me/?text=${teks}`, "_blank");
+  }
+
+  /** Tandai link grup sudah dikirim, supaya tidak terus muncul di daftar menunggu. */
+  async function konfirmasiGrupMember(m: Member) {
+    try {
+      const d = await api<{ member: Member }>(`/api/admin/members/${m.id}/grup-member`, {
+        method: "PATCH",
+      });
+      setMembers((prev) => prev.map((x) => (x.id === m.id ? d.member : x)));
     } catch (err) {
       setError((err as Error).message);
     }
@@ -291,6 +318,20 @@ function Member() {
                   <span className={`badge ${m.status === "member" ? "badge-member" : "badge-calon"}`}>
                     {m.status === "member" ? "MEMBER" : "CALON"}
                   </span>
+                  {m.verifikasi !== "disetujui" && (
+                    <span className="badge ml-1 bg-amber-100 text-amber-800">
+                      {m.verifikasi === "menunggu"
+                        ? "BELUM DIVERIFIKASI"
+                        : m.verifikasi === "ditunda"
+                          ? "DITUNDA"
+                          : "TIDAK LOLOS"}
+                    </span>
+                  )}
+                  {m.status === "member" && !m.grupMemberDikirimAt && (
+                    <span className="badge ml-1 bg-amber-100 text-amber-800">
+                      MENUNGGU KONFIRMASI GRUP
+                    </span>
+                  )}
                   {m.status === "member" && !m.pusatOpenedAt && (
                     <span className="badge ml-1 bg-amber-100 text-amber-800">BELUM LAPOR</span>
                   )}
@@ -308,6 +349,15 @@ function Member() {
                   <Link href={`/kartu/${m.code}`} className="text-xs text-[var(--accent)]">
                     Kartu QR
                   </Link>
+                  {m.status === "member" && !m.grupMemberDikirimAt && (
+                    <button
+                      onClick={() => konfirmasiGrupMember(m)}
+                      className="ml-3 text-xs text-[var(--accent)]"
+                      title="Sudah kirim link grup WhatsApp Member? Tandai di sini."
+                    >
+                      Konfirmasi grup
+                    </button>
+                  )}
                   {m.status === "member" && !m.pusatOpenedAt && (
                     <button
                       onClick={() => kirimLinkPusat(m)}
@@ -354,6 +404,34 @@ function Member() {
                       <Baris label="Provinsi" value={m.province} />
                       <Baris label="Catatan pengurus" value={m.note} />
                     </dl>
+
+                    {m.status === "member" && (
+                      <div className="mt-3 rounded-lg border border-[var(--line)] p-3">
+                        <p className="text-xs font-semibold">
+                          {m.grupMemberDikirimAt
+                            ? `Link grup Member sudah dikirim (${new Date(
+                                m.grupMemberDikirimAt
+                              ).toLocaleDateString("id-ID")})`
+                            : "Sudah ikut latihan pertama — belum dikonfirmasi & dikirimi link grup Member"}
+                        </p>
+                        {!m.grupMemberDikirimAt && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              onClick={() => bukaChatGrupMember(m)}
+                              className="btn btn-primary px-3 py-1 text-xs"
+                            >
+                              Kirim link grup via WhatsApp
+                            </button>
+                            <button
+                              onClick={() => konfirmasiGrupMember(m)}
+                              className="btn btn-ghost px-3 py-1 text-xs"
+                            >
+                              Tandai sudah dikirim
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="mt-3 border-t border-[var(--line)] pt-3">
                       <button

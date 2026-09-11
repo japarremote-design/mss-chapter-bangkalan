@@ -1,5 +1,12 @@
 export type MemberStatus = "calon" | "member";
 
+/**
+ * Hasil screening pengurus.
+ * Data lama yang belum punya kolom ini dianggap "disetujui" — mereka memang
+ * sudah lolos seleksi manual sebelum aplikasi ini ada.
+ */
+export type Verifikasi = "menunggu" | "disetujui" | "ditunda" | "ditolak";
+
 export type Member = {
   id: string;
   /** Kode unik untuk kartu QR, mis. MSS-7F3K2Q */
@@ -28,7 +35,20 @@ export type Member = {
   province?: string;
   /** Kapan link isian MSS Pusat dibuka member (sejauh yang bisa kita tahu). */
   pusatOpenedAt?: string | null;
+  /**
+   * Kapan pengurus mengirim link grup WhatsApp Member.
+   * Naik status jadi member (latihan pertama) TIDAK otomatis membuka grup —
+   * pengurus mengonfirmasi dulu, baru link grup dikirim manual.
+   */
+  grupMemberDikirimAt?: string | null;
+  grupMemberDikirimBy?: string;
   status: MemberStatus;
+  /** Screening pengurus — hanya yang "disetujui" boleh ngelist & ikut latihan. */
+  verifikasi: Verifikasi;
+  verifikasiAt?: string | null;
+  verifikasiBy?: string;
+  /** Alasan ditolak / catatan hasil screening, ditulis pengurus. */
+  verifikasiCatatan?: string;
   attendanceCount: number;
   firstAttendedAt?: string | null;
   lastAttendedAt?: string | null;

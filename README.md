@@ -9,15 +9,18 @@ Situs publik lama (Apps Script + Blogger) sudah digabung ke sini: hero, keunggul
 1. **Senin — relawan pelatih buat jadwal.** Di `/admin/sesi`, isi beberapa baris sekaligus (tanggal, jam, kolam, kuota opsional) lalu simpan. Sistem membuat satu paket jadwal berisi semua sesi minggu itu.
 2. **Share ke grup WhatsApp.** Tekan **Share ke WhatsApp** — pesan otomatis tersusun berisi daftar sesi + satu link. Bisa juga **Salin link**.
 3. **Dua grup WhatsApp.** Link yang sama dishare ke grup calon member dan grup member. Di daftar relawan pelatih, tiap nama diberi label CALON / MEMBER lengkap dengan hitungannya.
-4. **Calon member ngelist.** Buka link → cari namanya → pilih sesi mana saja yang mau diikuti. Bisa batal ikut selama belum hadir. Pilihan "siapa saya" tersimpan di HP-nya, jadi minggu depan tinggal pilih sesi. **Hanya nama yang sudah terdata di sistem yang bisa ngelist** — kalau tidak ketemu, orangnya diarahkan mengisi formulir pendaftaran dulu (lihat di bawah).
-5. **Hari-H — presensi.** Relawan pelatih membuka **link relawan pelatih** untuk sesi itu di HP-nya (tanpa akun) untuk menampilkan QR atau memindai kartu; peserta scan. **Hanya yang sudah ngelist yang bisa presensi**; yang belum ngelist ditolak dengan pesan jelas. Relawan pelatih tetap bisa menimpa lewat tombol "Tetap catat hadir" di mode scan kartu.
-6. **Rekap.** Detail sesi menampilkan siapa yang hadir dan siapa yang ngelist tapi tidak datang. CSV berisi kedua kolom itu.
+4. **Pengurus verifikasi pendaftar baru.** Di `/admin/verifikasi`, tiap pendaftar diperiksa dulu — terutama riwayat penyakit, trauma air, dan kemampuan berenang. Sebelum disetujui, dia **tidak bisa ngelist maupun ikut latihan**.
+5. **Latihan pertama → member, tapi grup Member tidak otomatis terbuka.** Begitu presensi pertamanya tercatat, statusnya naik jadi member secara otomatis — tapi link grup WhatsApp Member **tidak** langsung diberikan. Pengurus mengonfirmasi dulu lewat `/admin/member`, baru mengirim linknya manual lewat WhatsApp.
+6. **Calon member ngelist.** Buka link → cari namanya → pilih sesi mana saja yang mau diikuti. Bisa batal ikut selama belum hadir. Pilihan "siapa saya" tersimpan di HP-nya, jadi minggu depan tinggal pilih sesi. **Hanya nama yang sudah terdata di sistem yang bisa ngelist** — kalau tidak ketemu, orangnya diarahkan mengisi formulir pendaftaran dulu (lihat di bawah).
+7. **Hari-H — presensi.** Relawan pelatih membuka **link relawan pelatih** untuk sesi itu di HP-nya (tanpa akun) untuk menampilkan QR atau memindai kartu; peserta scan. **Hanya yang sudah ngelist yang bisa presensi**; yang belum ngelist ditolak dengan pesan jelas. Relawan pelatih tetap bisa menimpa lewat tombol "Tetap catat hadir" di mode scan kartu.
+8. **Rekap.** Detail sesi menampilkan siapa yang hadir dan siapa yang ngelist tapi tidak datang. CSV berisi kedua kolom itu.
 
 ## Fitur
 
 - **Calon member vs member** — pendaftar baru berstatus `calon`; status naik **otomatis** jadi `member` begitu kehadiran latihan pertamanya tercatat.
 - **Jadwal mingguan sekali buat** — beberapa sesi dalam satu form, menghasilkan satu link share untuk grup WhatsApp.
 - **Daftar ikut (RSVP)** — peserta memilih sesi lewat link. Kuota per sesi opsional; kalau penuh, tombol ikut otomatis mati. Sesi yang harinya sudah lewat ditandai "Sudah lewat" dan tidak bisa di-list.
+- **Wajib lolos verifikasi pengurus** — pendaftar baru masuk berstatus `menunggu`. Yang belum `disetujui` ditolak saat ngelist **dan** saat presensi, termasuk kalau relawan pelatih menekan "Tetap catat hadir". Lihat bagian *Verifikasi calon member* di bawah.
 - **Harus terdata dulu** — ngelist hanya bisa untuk nama yang sudah ada di database. Tidak ada jalan pintas "cukup nama + nomor": aturannya ditegakkan di halaman **dan** di API, jadi tidak bisa dilewati. Alasannya, relawan pelatih perlu tahu riwayat kesehatan, trauma air, dan kemampuan renang seseorang sebelum dia masuk kolam.
 - **Presensi wajib ngelist dulu** — yang tidak ada di daftar ditolak saat scan, dengan opsi timpa manual untuk relawan pelatih.
 - **Presensi QR mode A (member yang scan)** — layar pengurus menampilkan QR yang **berganti tiap 20 detik** (ditandatangani HMAC), jadi screenshot lama tidak bisa dipakai titip absen. Member scan → cari nama → hadir.
@@ -52,6 +55,25 @@ Penggabungan berlaku untuk dua hal sekaligus:
 2. **Sesi yang sudah tersimpan sebelumnya** — sesi lama ikut dipindahkan ke paket jadwal yang baru dishare, supaya link minggu ini memuat semua latihan. Daftar ikut dan daftar hadir yang sudah ada tetap utuh.
 
 Kalau memang ingin dua kelompok terpisah di jam yang sama, bedakan salah satu kolomnya — misalnya tulis kolam sebagai "Kolam Syariah (kelompok A)" dan "Kolam Syariah (kelompok B)".
+
+## Verifikasi calon member
+
+Renang bukan kegiatan tanpa risiko. Ada kondisi yang membuat seseorang sebaiknya tidak masuk kolam dulu — sedang diare (menular lewat air), luka terbuka, penyakit kulit menular — dan ada yang butuh izin dokter dulu, seperti epilepsi atau penyakit jantung. Karena itu pendaftaran tidak langsung membuka akses latihan.
+
+**Empat status** di kolom `verifikasi`:
+
+| Status | Artinya | Boleh ikut latihan? |
+| --- | --- | --- |
+| `menunggu` | baru mendaftar, belum diperiksa | tidak |
+| `disetujui` | lolos screening pengurus | ya |
+| `ditunda` | kondisi sementara, bisa dibuka lagi nanti | tidak |
+| `ditolak` | tidak bisa dilanjutkan | tidak |
+
+Penegakannya ada di **server** (`joinSession` dan `recordAttendance` di `src/lib/data.ts`), bukan sekadar tombol yang disembunyikan — jadi tidak bisa dilewati dengan memanggil API langsung. Untuk `ditunda` dan `ditolak`, catatan alasan **wajib diisi** supaya keputusannya bisa dipertanggungjawabkan.
+
+Halaman `/admin/verifikasi` menampilkan tiap pendaftar beserta jawabannya, dengan riwayat penyakit dan trauma air ditandai merah kalau isinya bukan "tidak ada". Di bawahnya ada daftar periksa yang bisa diklik untuk mengisi catatan, dikelompokkan jadi tiga: *tunda dulu* (kondisi sementara), *perlu izin dokter*, dan *boleh ikut tapi perlu pendampingan ekstra*. Daftar itu disusun dari pedoman kolam renang umum ([CDC Healthy Swimming](https://www.cdc.gov/healthy-swimming/prevention/index.html)) dan daftar kontraindikasi program renang adaptif — **alat bantu ingat untuk pengurus, bukan pemeriksaan medis**. Kondisi berat tetap harus dipastikan ke dokter.
+
+**Data lama aman.** Dokumen yang tidak punya kolom `verifikasi` — termasuk 400-an data hasil impor — otomatis dibaca sebagai `disetujui`, karena mereka memang sudah lolos seleksi manual sebelum aplikasi ini ada. Member yang ditambahkan langsung oleh pengurus lewat panel admin juga langsung `disetujui`.
 
 ## Data pendaftaran
 
@@ -121,9 +143,19 @@ Di halaman ngelist, tiap sesi menampilkan relawan pelatih, jam, kolam, HTM, sisa
 
 Alurnya begini:
 
-- Orang mendaftar lewat formulir di beranda → layar sukses menampilkan tombol **Gabung Grup WhatsApp Calon Member**, baru kemudian tombol konfirmasi ke admin.
+- Orang mendaftar lewat formulir di beranda → layar sukses menampilkan tombol **Gabung Grup WhatsApp Calon Member**, baru kemudian tombol konfirmasi ke admin. Ini **otomatis dan self-serve** — tidak perlu campur tangan pengurus.
 - Dari grup itulah calon member menerima link jadwal mingguan dan ngelist ikut latihan.
-- Begitu kehadiran latihan pertamanya tercatat, layar presensinya menampilkan ucapan selamat + tombol **Gabung Grup WhatsApp Member**.
+- Begitu kehadiran latihan pertamanya tercatat, statusnya naik jadi member secara otomatis, tapi **grup Member tidak ikut terbuka otomatis**. Layar presensinya menampilkan tombol WhatsApp ke tiap admin dengan pesan yang sudah menyebutkan bahwa dia baru saja ikut latihan pertama — beda dengan grup calon member yang linknya langsung tersedia tanpa perlu menghubungi siapa pun.
+
+**Kenapa dibedakan begini?** Grup calon member wajar dibuka lebar karena orangnya sudah lolos screening (lihat *Verifikasi calon member*) sebelum bisa ngelist. Tapi naik status jadi member terjadi otomatis lewat scan QR sendiri tanpa pengurus melihat langsung — jadi sebelum masuk grup yang lebih "dalam", pengurus mengonfirmasi dulu siapa orangnya.
+
+Alur konfirmasinya ada di **`/admin/member`**:
+
+1. Dasbor menampilkan spanduk **"N member baru sudah ikut latihan pertama tapi belum dikonfirmasi & dikirimi link grup"**.
+2. Baris member yang bersangkutan diberi badge **MENUNGGU KONFIRMASI GRUP**, dengan tombol cepat **Konfirmasi grup** di ujung baris, atau buka detailnya untuk tombol **Kirim link grup via WhatsApp** (membuka chat WA dengan link grup sudah tertempel di pesan) dan **Tandai sudah dikirim**.
+3. Setelah ditandai, `grupMemberDikirimAt` tersimpan dan badgenya hilang.
+
+Data lama (impor 400-an dan member yang ditambahkan langsung berstatus member lewat panel admin) otomatis dianggap sudah dikirimi link, supaya tidak membanjiri dasbor dengan konfirmasi yang sudah basi.
 
 Link undangan grup diatur pengurus sendiri di **`/admin/pengaturan`** — tempel tautan dari WhatsApp (*Info grup → Undang lewat tautan → Salin tautan*), simpan, selesai. Halaman publik langsung ikut berubah, **tanpa deploy ulang**.
 

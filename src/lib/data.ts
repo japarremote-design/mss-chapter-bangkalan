@@ -11,8 +11,30 @@ import type {
   Schedule,
   ScheduleStatus,
   TrainingSession,
+  Verifikasi,
   Week,
 } from "./types";
+
+/**
+ * Baca kolom verifikasi. Dokumen lama (hasil impor 400-an data lama, atau
+ * dibuat sebelum fitur screening ada) tidak punya kolom ini — mereka sudah
+ * lolos seleksi manual, jadi dianggap "disetujui" supaya tidak terkunci.
+ */
+export function bacaVerifikasi(v: unknown): Verifikasi {
+  return v === "menunggu" || v === "ditolak" || v === "ditunda" ? v : "disetujui";
+}
+
+/** Pesan penolakan yang ditampilkan ke orangnya saat mencoba ikut latihan. */
+function pesanBelumLolos(m: Member): string {
+  const catatan = m.verifikasiCatatan ? ` Catatan pengurus: ${m.verifikasiCatatan}` : "";
+  if (m.verifikasi === "ditunda") {
+    return `Keikutsertaanmu ditunda sementara oleh pengurus.${catatan} Kalau kondisinya sudah pulih, kabari admin untuk diaktifkan lagi.`;
+  }
+  if (m.verifikasi === "ditolak") {
+    return `Pendaftaranmu belum bisa dilanjutkan.${catatan} Silakan hubungi admin MSS.`;
+  }
+  return "Pendaftaranmu masih menunggu verifikasi pengurus. Tunggu kabar dari admin ya.";
+}
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // tanpa I, O, 0, 1 biar tidak salah baca
 
@@ -62,7 +84,13 @@ export function memberFromDoc(
     city: d.city ?? "",
     province: d.province ?? "",
     pusatOpenedAt: d.pusatOpenedAt ?? null,
+    grupMemberDikirimAt: d.grupMemberDikirimAt ?? null,
+    grupMemberDikirimBy: d.grupMemberDikirimBy ?? "",
     status: (d.status as MemberStatus) ?? "calon",
+    verifikasi: bacaVerifikasi(d.verifikasi),
+    verifikasiAt: d.verifikasiAt ?? null,
+    verifikasiBy: d.verifikasiBy ?? "",
+    verifikasiCatatan: d.verifikasiCatatan ?? "",
     attendanceCount: d.attendanceCount ?? 0,
     firstAttendedAt: d.firstAttendedAt ?? null,
     lastAttendedAt: d.lastAttendedAt ?? null,
@@ -140,6 +168,11 @@ export async function joinSession(sessionId: string, memberId: string) {
     }
 
     const member = memberFromDoc(memberSnap);
+    // Screening pengurus: yang belum disetujui tidak boleh ngelist sama sekali.
+    if (member.verifikasi !== "disetujui") {
+      throw new HttpError(403, pesanBelumLolos(member));
+    }
+
     const entry: RsvpEntry = {
       memberId: member.id,
       code: member.code,
@@ -221,6 +254,17 @@ export async function recordAttendance(opts: {
 
     const member = memberFromDoc(memberSnap);
 
+    // Berlaku juga saat relawan pelatih menimpa lewat "Tetap catat hadir":
+    // yang belum lolos screening memang belum boleh masuk kolam.
+    if (member.verifikasi !== "disetujui") {
+      throw new HttpError(
+        403,
+        member.verifikasi === "menunggu"
+          ? `${member.name} belum diverifikasi pengurus, jadi belum boleh ikut latihan.`
+          : `${member.name} sedang tidak diizinkan ikut latihan (${member.verifikasi}). Hubungi admin.`
+      );
+    }
+
     if (!rsvpSnap.exists && !opts.force) {
       throw new HttpError(
         403,
@@ -283,19 +327,30 @@ export async function recordAttendance(opts: {
  * hasilnya ditahan sebentar di memori server.
  */
 const INDEKS_UMUR_MS = 60_000;
-let indeksNama: { at: number; data: { id: string; name: string; status: MemberStatus }[] } | null =
-  null;
+type BarisIndeks = {
+  id: string;
+  name: string;
+  status: MemberStatus;
+  verifikasi: Verifikasi;
+  catatan: string;
+};
+let indeksNama: { at: number; data: BarisIndeks[] } | null = null;
 
 export async function cariNama(q: string, batas = 12) {
   const now = Date.now();
   if (!indeksNama || now - indeksNama.at > INDEKS_UMUR_MS) {
-    const snap = await adminDb().collection("members").select("name", "status").get();
+    const snap = await adminDb()
+      .collection("members")
+      .select("name", "status", "verifikasi", "verifikasiCatatan")
+      .get();
     indeksNama = {
       at: now,
       data: snap.docs.map((d) => ({
         id: d.id,
         name: String(d.get("name") ?? ""),
         status: (d.get("status") as MemberStatus) ?? "calon",
+        verifikasi: bacaVerifikasi(d.get("verifikasi")),
+        catatan: String(d.get("verifikasiCatatan") ?? ""),
       })),
     };
   }

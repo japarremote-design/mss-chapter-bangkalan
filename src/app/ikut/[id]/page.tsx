@@ -20,7 +20,14 @@ type Sesi = {
   names: string[];
 };
 type Week = { id: string; label: string; open: boolean };
-type Kandidat = { id: string; name: string; status: "calon" | "member" };
+type Verifikasi = "menunggu" | "disetujui" | "ditunda" | "ditolak";
+type Kandidat = {
+  id: string;
+  name: string;
+  status: "calon" | "member";
+  verifikasi?: Verifikasi;
+  catatan?: string;
+};
 
 const HARI = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
@@ -57,7 +64,7 @@ function Ikut() {
   const [busyId, setBusyId] = useState("");
 
   // Siapa saya — disimpan di HP supaya tidak perlu cari nama tiap buka link.
-  const [me, setMe] = useState<{ id: string; name: string } | null>(null);
+  const [me, setMe] = useState<{ id: string; name: string; verifikasi?: Verifikasi; catatan?: string } | null>(null);
   const [q, setQ] = useState("");
   const [kandidat, setKandidat] = useState<Kandidat[]>([]);
 
@@ -101,7 +108,17 @@ function Ikut() {
       `/api/public/rsvp?weekId=${weekId}&memberId=${me.id}&k=${encodeURIComponent(token)}`
     )
       .then((r) => r.json())
-      .then((d) => setJoined(d.joined ?? []))
+      .then((d) => {
+        setJoined(d.joined ?? []);
+        // Perbarui status verifikasi yang tersimpan di HP.
+        if (d.verifikasi && d.verifikasi !== me.verifikasi) {
+          const segar = { ...me, verifikasi: d.verifikasi, catatan: d.catatan ?? "" };
+          setMe(segar);
+          try {
+            localStorage.setItem("mss-me", JSON.stringify(segar));
+          } catch {}
+        }
+      })
       .catch(() => {});
   }, [me, weekId, token]);
 
@@ -119,7 +136,7 @@ function Ikut() {
     return () => clearTimeout(t);
   }, [q, post]);
 
-  function pilihSaya(m: { id: string; name: string }) {
+  function pilihSaya(m: { id: string; name: string; verifikasi?: Verifikasi; catatan?: string }) {
     setMe(m);
     try {
       localStorage.setItem("mss-me", JSON.stringify(m));
@@ -127,6 +144,8 @@ function Ikut() {
     setQ("");
     setKandidat([]);
   }
+
+  const belumLolos = Boolean(me?.verifikasi && me.verifikasi !== "disetujui");
 
   async function toggle(s: Sesi) {
     if (!me) return;
@@ -198,10 +217,22 @@ function Ikut() {
                     <span className="font-medium">{k.name}</span>
                     <span
                       className={`badge ml-auto ${
-                        k.status === "member" ? "badge-member" : "badge-calon"
+                        k.verifikasi && k.verifikasi !== "disetujui"
+                          ? "badge-calon"
+                          : k.status === "member"
+                            ? "badge-member"
+                            : "badge-calon"
                       }`}
                     >
-                      {k.status === "member" ? "MEMBER" : "CALON"}
+                      {k.verifikasi === "menunggu"
+                        ? "BELUM DIVERIFIKASI"
+                        : k.verifikasi === "ditunda"
+                          ? "DITUNDA"
+                          : k.verifikasi === "ditolak"
+                            ? "TIDAK AKTIF"
+                            : k.status === "member"
+                              ? "MEMBER"
+                              : "CALON"}
                     </span>
                   </button>
                 </li>
@@ -252,6 +283,29 @@ function Ikut() {
               </p>
             )}
 
+            {belumLolos ? (
+              <div className="panel border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
+                <p className="text-2xl">⏳</p>
+                <p className="mt-2 font-bold">
+                  {me.verifikasi === "menunggu"
+                    ? "Pendaftaranmu sedang diverifikasi pengurus"
+                    : me.verifikasi === "ditunda"
+                      ? "Keikutsertaanmu ditunda sementara"
+                      : "Belum bisa ikut latihan"}
+                </p>
+                <p className="mt-1 text-xs">
+                  {me.verifikasi === "menunggu"
+                    ? "Pengurus memeriksa dulu data kesehatan dan kemampuan renang tiap pendaftar demi keamanan di kolam. Kamu akan dihubungi lewat WhatsApp. Setelah disetujui, buka lagi halaman ini untuk ngelist."
+                    : "Silakan hubungi admin MSS untuk keterangan lebih lanjut."}
+                </p>
+                {me.catatan && (
+                  <p className="mt-2 rounded-lg bg-white/70 p-2 text-xs">
+                    Catatan pengurus: {me.catatan}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
             <p className="mb-2 text-sm text-[var(--muted)]">
               Pilih sesi yang mau kamu ikuti minggu ini:
             </p>
@@ -335,6 +389,8 @@ function Ikut() {
                 </p>
               )}
             </div>
+              </>
+            )}
 
             <div className="panel mt-5 p-4 text-xs text-[var(--muted)]">
               <p className="mb-1 font-semibold text-[var(--ink)]">Ingat ya:</p>

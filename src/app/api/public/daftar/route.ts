@@ -59,6 +59,11 @@ export async function POST(req: Request) {
       reason: teks(body.reason ?? body.motivasi ?? body.alasan),
       note: "",
       status: "calon",
+      // Wajib lolos screening pengurus dulu sebelum boleh ikut latihan.
+      verifikasi: "menunggu",
+      verifikasiAt: null,
+      verifikasiBy: "",
+      verifikasiCatatan: "",
       attendanceCount: 0,
       firstAttendedAt: null,
       lastAttendedAt: null,
@@ -75,7 +80,8 @@ export async function POST(req: Request) {
           ok: true,
           success: true, // kompatibel dengan kode Blogger lama
           code,
-          message: "Barakallah! Pendaftaran Anda berhasil disimpan.",
+          message:
+            "Barakallah! Pendaftaran Anda tersimpan dan sedang menunggu verifikasi pengurus.",
         },
         { status: 201 }
       )

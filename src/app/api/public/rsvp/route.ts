@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { cariNama, joinSession, leaveSession } from "@/lib/data";
+import { bacaVerifikasi, cariNama, joinSession, leaveSession } from "@/lib/data";
 import { verifyLinkToken } from "@/lib/token";
 
 export const runtime = "nodejs";
@@ -79,6 +79,12 @@ export async function GET(req: Request) {
     if (!memberId) return Response.json({ joined: [] });
 
     const db = adminDb();
+    // Status verifikasi dibaca ulang tiap kali halaman dibuka — pilihan "siapa
+    // saya" tersimpan di HP, jadi datanya bisa saja sudah basi.
+    const memberSnap = await db.collection("members").doc(memberId).get();
+    const verifikasi = bacaVerifikasi(memberSnap.get("verifikasi"));
+    const catatan = String(memberSnap.get("verifikasiCatatan") ?? "");
+
     const sessions = await db.collection("sessions").where("weekId", "==", weekId).get();
     const joined: string[] = [];
     await Promise.all(
@@ -87,7 +93,7 @@ export async function GET(req: Request) {
         if (hit.exists) joined.push(s.id);
       })
     );
-    return Response.json({ joined });
+    return Response.json({ joined, verifikasi, catatan });
   } catch (err) {
     return errorResponse(err);
   }

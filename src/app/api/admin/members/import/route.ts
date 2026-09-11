@@ -96,6 +96,16 @@ export async function POST(req: Request) {
         province: teks(r.province),
         note: teks(r.note),
         status,
+        // Data lama sudah lolos seleksi manual sebelum aplikasi ini ada.
+        verifikasi: "disetujui",
+        verifikasiAt: now,
+        verifikasiBy: "impor",
+        verifikasiCatatan: "Data lama, dianggap sudah terverifikasi.",
+        // Yang statusnya sudah "member" dari data lama berarti sudah lama
+        // gabung grup — jangan sampai 400-an data lama muncul semua sebagai
+        // "menunggu konfirmasi grup" di dasbor.
+        grupMemberDikirimAt: status === "member" ? now : null,
+        grupMemberDikirimBy: status === "member" ? "impor" : "",
         attendanceCount: hadir,
         firstAttendedAt: null,
         lastAttendedAt: null,

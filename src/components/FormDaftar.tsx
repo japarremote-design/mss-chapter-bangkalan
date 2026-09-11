@@ -312,7 +312,9 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           ✓
         </div>
         <h3 className="text-xl font-bold">Barakallah, pendaftaranmu tersimpan!</h3>
-        <p className="mt-1 text-sm opacity-90">Selamat datang di skuad, {sukses.name}.</p>
+        <p className="mt-1 text-sm opacity-90">
+          Sekarang menunggu verifikasi pengurus, {sukses.name}.
+        </p>
       </div>
 
       <div className="p-5">
@@ -323,6 +325,15 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           </p>
           <p className="mt-1 text-xs text-[var(--muted)]">
             Tunjukkan ke relawan pelatih saat latihan pertama.
+          </p>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-bold">⏳ Belum bisa langsung ikut latihan ya</p>
+          <p className="mt-1 text-xs">
+            Pengurus memeriksa dulu data tiap pendaftar — terutama riwayat penyakit, trauma air, dan
+            kemampuan berenang — demi keamanan di kolam. Kamu akan dihubungi lewat WhatsApp. Begitu
+            disetujui, kamu baru bisa ngelist lewat link jadwal yang dishare di grup.
           </p>
         </div>
 
@@ -349,9 +360,9 @@ function Selesai({ sukses }: { sukses: Sukses }) {
         </div>
 
         <p className="mt-4 rounded-xl bg-[var(--accent-soft)] p-3 text-xs text-[var(--muted)]">
-          <b className="text-[var(--ink)]">Datang ke sini dari link jadwal?</b> Namamu sekarang
-          sudah terdata — buka lagi link jadwal itu, ketik namamu, lalu pilih sesi yang mau kamu
-          ikuti.
+          <b className="text-[var(--ink)]">Datang ke sini dari link jadwal?</b> Namamu sudah
+          terdata. Buka lagi link jadwal itu setelah pendaftaranmu disetujui pengurus, lalu pilih
+          sesi yang mau kamu ikuti.
         </p>
 
         <p className="mt-3 text-xs text-[var(--muted)]">

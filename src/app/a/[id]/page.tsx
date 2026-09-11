@@ -2,8 +2,8 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useGrupWa } from "@/components/useGrupWa";
 import { PusatLangkah } from "@/components/PusatLangkah";
+import { ADMIN_CONTACTS, waLink } from "@/lib/config";
 
 type SessionInfo = {
   id: string;
@@ -31,7 +31,6 @@ function Center({ children }: { children: React.ReactNode }) {
 }
 
 function Checkin() {
-  const grup = useGrupWa();
   const { id } = useParams<{ id: string }>();
   const token = useSearchParams().get("t") ?? "";
 
@@ -119,16 +118,28 @@ function Checkin() {
               <p className="text-sm text-green-800">
                 Selamat! Ini latihan pertamamu — statusmu naik jadi <b>MEMBER</b>.
               </p>
-              {grup.member && (
-                <a
-                  href={grup.member}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary mt-3 w-full"
-                >
-                  Gabung Grup WhatsApp Member
-                </a>
-              )}
+              {/* Grup WhatsApp Member tidak dibuka otomatis — pengurus
+                  mengonfirmasi dulu, baru mengirim linknya lewat WhatsApp. */}
+              <p className="mt-2 text-xs text-green-800">
+                Grup WhatsApp Member belum otomatis terbuka. Konfirmasi dulu ke admin di bawah ini,
+                nanti pengurus yang kirim link gabung grupnya.
+              </p>
+              <div className="mt-3 space-y-2">
+                {ADMIN_CONTACTS.map((a) => (
+                  <a
+                    key={a.phone}
+                    href={waLink(
+                      a.phone,
+                      `Assalamualaikum Admin ${a.name}, saya ${sukses.name} sudah ikut latihan MSS Chapter Bangkalan yang pertama kali. Mohon konfirmasi & link gabung Grup WhatsApp Member ya. Syukron!`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary block w-full text-sm"
+                  >
+                    Konfirmasi ke Admin {a.name} ({a.role})
+                  </a>
+                ))}
+              </div>
             </div>
           )}
           {sukses.promoted && sukses.memberId && (

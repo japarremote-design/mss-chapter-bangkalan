@@ -35,16 +35,48 @@ function Dashboard() {
 
   const jumlahMember = members.filter((m) => m.status === "member").length;
   const jumlahCalon = members.filter((m) => m.status === "calon").length;
+  const jumlahMenunggu = members.filter((m) => m.verifikasi === "menunggu").length;
+  const jumlahGrupBelumDikirim = members.filter(
+    (m) => m.status === "member" && !m.grupMemberDikirimAt
+  ).length;
   const sesiTerbuka = sessions.filter((s) => s.open);
 
   return (
     <div className="space-y-6">
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
+      {jumlahGrupBelumDikirim > 0 && (
+        <Link
+          href="/admin/member"
+          className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
+        >
+          <span className="text-lg">💬</span>
+          <span>
+            <b>{jumlahGrupBelumDikirim} member baru</b> sudah ikut latihan pertama tapi belum
+            dikonfirmasi & dikirimi link grup WhatsApp Member.
+          </span>
+          <span className="ml-auto font-bold">Buka daftar member →</span>
+        </Link>
+      )}
+
+      {jumlahMenunggu > 0 && (
+        <Link
+          href="/admin/verifikasi"
+          className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
+        >
+          <span className="text-lg">🔎</span>
+          <span>
+            <b>{jumlahMenunggu} calon member</b> menunggu diverifikasi. Selama belum disetujui,
+            mereka tidak bisa ngelist maupun ikut latihan.
+          </span>
+          <span className="ml-auto font-bold">Periksa sekarang →</span>
+        </Link>
+      )}
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Member" value={jumlahMember} />
         <Stat label="Calon member" value={jumlahCalon} />
-        <Stat label="Sesi latihan" value={sessions.length} />
+        <Stat label="Menunggu verifikasi" value={jumlahMenunggu} />
         <Stat label="Sesi dibuka" value={sesiTerbuka.length} accent />
       </div>
 
