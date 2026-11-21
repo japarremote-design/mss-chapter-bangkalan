@@ -113,6 +113,26 @@ body {
     letter-spacing: -0.02em;
     color: var(--deep);
   }
+
+  /* Judul-judul situs publik — serif sistem, bukan sans-serif default dasbor.
+     Sengaja tidak pakai web font eksternal supaya tidak bergantung pada
+     koneksi ke Google Fonts saat build/deploy. */
+  .font-display {
+    font-family: ui-serif, Georgia, "Noto Serif", "Times New Roman", serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Pembatas gelombang antar-section, mengambil motif ombak dari logo —
+   dipakai sebagai pengganti garis lurus/kartu kotak yang terasa generik. */
+.wave-divider {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-bottom: -1px; /* rapatkan ke section berikutnya, hindari celah antialiasing */
+}
+@media (min-width: 640px) {
+  .wave-divider { height: 64px; }
 }
 
 /* Gelombang dekoratif, mengambil bentuk ombak di logo */
