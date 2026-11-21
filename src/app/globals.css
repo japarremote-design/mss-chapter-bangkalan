@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Palet diambil dari logo MSS: biru laut, biru langit, putih */
+  /* Palet diambil dari logo MSS: biru laut, biru langit, putih. */
   --bg: #f2f8fc;
   --panel: #ffffff;
   --line: #d9e7f2;
