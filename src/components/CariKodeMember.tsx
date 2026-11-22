@@ -100,6 +100,17 @@ export function CariKodeMember() {
               <p className="mt-2 font-mono text-base font-black tracking-widest text-[var(--accent)]">
                 {hasil.code}
               </p>
+              <a
+                href={`/kartu/${hasil.code}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary mt-3 w-full"
+              >
+                Buka halaman kartu (buat disimpan/dicetak) →
+              </a>
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Cetak dari halaman kartu itu ya, jangan dari halaman ini — hasilnya lebih rapi.
+              </p>
               <button
                 type="button"
                 onClick={() => {

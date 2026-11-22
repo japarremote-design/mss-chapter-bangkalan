@@ -314,17 +314,17 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           <p className="mt-3 font-mono text-lg font-black tracking-widest text-[var(--accent)]">
             {sukses.code}
           </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
-            Simpan screenshot QR ini di HP-mu (atau cetak lewat{" "}
-            <a
-              href={`/kartu/${sukses.code}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline underline-offset-2"
-            >
-              halaman kartu
-            </a>
-            ). Inilah yang dipakai relawan pelatih untuk presensi — tunjukkan tiap kali latihan.
+          <a
+            href={`/kartu/${sukses.code}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary mt-3 w-full"
+          >
+            Buka halaman kartu (buat disimpan/dicetak) →
+          </a>
+          <p className="mt-2 text-xs text-[var(--muted)]">
+            Cetak dari halaman kartu itu ya, jangan dari halaman ini — hasilnya lebih rapi.
+            Inilah yang dipakai relawan pelatih untuk presensi — tunjukkan tiap kali latihan.
           </p>
         </div>
 
