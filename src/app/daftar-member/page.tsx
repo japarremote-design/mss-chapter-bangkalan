@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/config";
 import { FormDaftarMember } from "@/components/FormDaftarMember";
+import { CariKodeMember } from "@/components/CariKodeMember";
 
 export const metadata = {
   title: "Pendataan Ulang Member",
@@ -42,6 +43,8 @@ export default function DaftarMemberPage() {
             verifikasi pengurus.
           </p>
         </div>
+
+        <CariKodeMember />
 
         <FormDaftarMember />
       </div>
