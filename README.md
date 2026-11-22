@@ -75,6 +75,19 @@ Halaman `/admin/verifikasi` menampilkan tiap pendaftar beserta jawabannya, denga
 
 **Data lama aman.** Dokumen yang tidak punya kolom `verifikasi` — termasuk 400-an data hasil impor — otomatis dibaca sebagai `disetujui`, karena mereka memang sudah lolos seleksi manual sebelum aplikasi ini ada. Member yang ditambahkan langsung oleh pengurus lewat panel admin juga langsung `disetujui`.
 
+## Pendataan ulang member lama (`/daftar-member`)
+
+Dipakai saat database direset — misalnya karena pengurus sebelumnya belum sepakat memakai aplikasi ini, lalu kemudian sepakat, sehingga member yang sudah lama ikut MSS perlu didata ulang dari nol. **Ini bukan formulir pendaftaran calon member** (`/daftar`):
+
+| | `/daftar` (calon member baru) | `/daftar-member` (member lama) |
+| --- | --- | --- |
+| Status awal | `calon` | `member` langsung |
+| Verifikasi | `menunggu` → harus discreening pengurus dulu | `disetujui` langsung, tidak masuk antrean |
+| Grup WA | diarahkan ke grup calon member | dianggap sudah di grup member |
+| Siapa yang isi | orang yang belum pernah ikut latihan | orang yang sudah lama ikut MSS, sekadar mendata ulang |
+
+Endpoint APInya (`/api/public/daftar-member`) terpisah dari `/api/public/daftar` supaya aturan keduanya tidak tercampur. Halaman ini **sengaja tidak dipasang di navigasi atau beranda** — pengurus membagikan link-nya manual lewat WhatsApp (ada tombol "Link pendataan member lama" di `/admin/member` untuk menyalin/mengirim linknya), supaya calon member baru tidak memakainya untuk melewati proses verifikasi kesehatan.
+
 ## Data pendaftaran
 
 Formulir di `/daftar` (dan di bagian bawah beranda) menggantikan Google Form. Isian, urutan, dan status wajibnya dibuat sama dengan formulir lama.
