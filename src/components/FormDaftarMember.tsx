@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ADMIN_CONTACTS, waLink } from "@/lib/config";
 import { useGrupWa } from "./useGrupWa";
+import { Qr } from "./Qr";
 
 type Sukses = { code: string; name: string; adminPhone: string };
 
@@ -33,7 +34,7 @@ const NAMA_FIELD: Record<Field, string> = {
   age: "usia",
   gender: "jenis kelamin",
   religion: "agama",
-  address: "alamat domisili",
+  address: "alamat lengkap",
   job: "pekerjaan",
   maritalStatus: "status pernikahan",
   canSwim: "sudah bisa berenang?",
@@ -183,10 +184,11 @@ export function FormDaftarMember() {
             />
             <Teks label="Agama" value={form.religion} onChange={(v) => set("religion", v)} />
             <Teks
-              label="Alamat domisili"
+              label="Alamat lengkap"
               value={form.address}
               onChange={(v) => set("address", v)}
-              placeholder="Kecamatan / desa cukup"
+              placeholder="Jalan, RT/RW, kelurahan/desa, kecamatan"
+              area
             />
             <Teks label="Pekerjaan" value={form.job} onChange={(v) => set("job", v)} />
           </>
@@ -301,12 +303,28 @@ function Selesai({ sukses }: { sukses: Sukses }) {
 
       <div className="p-5">
         <div className="rounded-xl border border-dashed border-[var(--accent)] bg-[var(--accent-soft)] p-4 text-center">
-          <p className="text-xs uppercase tracking-wider text-[var(--muted)]">Kode member-mu</p>
-          <p className="mt-1 font-mono text-2xl font-black tracking-widest text-[var(--accent)]">
+          <p className="text-xs uppercase tracking-wider text-[var(--muted)]">
+            QR presensi kamu
+          </p>
+          <div className="mt-3 flex justify-center">
+            <div className="rounded-xl bg-white p-3">
+              <Qr value={sukses.code} size={200} />
+            </div>
+          </div>
+          <p className="mt-3 font-mono text-lg font-black tracking-widest text-[var(--accent)]">
             {sukses.code}
           </p>
           <p className="mt-1 text-xs text-[var(--muted)]">
-            Tunjukkan ke relawan pelatih saat ngelist atau presensi kalau diperlukan.
+            Simpan screenshot QR ini di HP-mu (atau cetak lewat{" "}
+            <a
+              href={`/kartu/${sukses.code}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2"
+            >
+              halaman kartu
+            </a>
+            ). Inilah yang dipakai relawan pelatih untuk presensi — tunjukkan tiap kali latihan.
           </p>
         </div>
 
