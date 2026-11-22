@@ -33,6 +33,11 @@ function Member() {
   const [buka, setBuka] = useState("");
   const [showImpor, setShowImpor] = useState(false);
   const [grupMember, setGrupMember] = useState("");
+  const [showPendataan, setShowPendataan] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => setOrigin(window.location.origin), []);
+  const linkPendataan = `${origin}/daftar-member`;
 
   useEffect(() => {
     if (!user) return;
@@ -179,10 +184,46 @@ function Member() {
         <button onClick={() => setShowImpor((v) => !v)} className="btn btn-ghost">
           {showImpor ? "Tutup impor" : "Impor CSV"}
         </button>
+        <button onClick={() => setShowPendataan((v) => !v)} className="btn btn-ghost">
+          {showPendataan ? "Tutup link pendataan" : "Link pendataan member lama"}
+        </button>
         <button onClick={() => setShowForm((v) => !v)} className="btn btn-primary">
           {showForm ? "Batal" : "+ Tambah"}
         </button>
       </div>
+
+      {showPendataan && (
+        <div className="panel p-4">
+          <p className="mb-1 text-sm font-bold">Link pendataan ulang member lama</p>
+          <p className="mb-2 text-xs text-[var(--muted)]">
+            Khusus member yang sudah lama ikut MSS, untuk mendata ulang dirinya setelah database
+            direset — langsung berstatus member &amp; lolos verifikasi, <b>tidak</b> lewat antrean
+            screening seperti pendaftaran calon member baru. Jangan sebar ke orang yang belum
+            pernah ikut latihan sama sekali.
+          </p>
+          <p className="mb-2 break-all rounded-lg bg-[var(--accent-soft)] p-2 font-mono text-xs">
+            {linkPendataan}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => navigator.clipboard?.writeText(linkPendataan)}
+              className="btn btn-ghost px-3 py-1 text-xs"
+            >
+              Salin link
+            </button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(
+                `Assalamualaikum, mohon isi ulang data diri sebagai member MSS Chapter Bangkalan lewat link ini ya:\n${linkPendataan}\n\nStatus membermu tetap aman, ini cuma pendataan ulang karena sistemnya baru.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary px-3 py-1 text-xs"
+            >
+              Bagikan lewat WhatsApp
+            </a>
+          </div>
+        </div>
+      )}
 
       {showImpor && (
         <ImporMember
