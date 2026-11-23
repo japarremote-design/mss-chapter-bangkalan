@@ -133,7 +133,7 @@ function Verifikasi() {
         <p className="panel p-6 text-center text-sm text-[var(--muted)]">Memuat…</p>
       ) : menunggu.length === 0 ? (
         <p className="panel p-6 text-center text-sm text-[var(--muted)]">
-          Tidak ada pendaftar yang menunggu verifikasi. 🎉
+          Tidak ada pendaftar yang menunggu verifikasi.
         </p>
       ) : (
         <div className="space-y-4">
