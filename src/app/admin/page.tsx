@@ -42,61 +42,57 @@ function Dashboard() {
   const sesiTerbuka = sessions.filter((s) => s.open);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      <div>
+        <h1>Ringkasan</h1>
+        <p className="mt-0.5 text-sm text-[var(--muted)]">
+          Keanggotaan dan sesi latihan MSS Chapter Bangkalan.
+        </p>
+      </div>
+
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
       {jumlahGrupBelumDikirim > 0 && (
-        <Link
-          href="/admin/member"
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
-        >
-          <span className="text-lg">💬</span>
-          <span>
-            <b>{jumlahGrupBelumDikirim} member baru</b> sudah ikut latihan pertama tapi belum
-            dikonfirmasi & dikirimi link grup WhatsApp Member.
-          </span>
-          <span className="ml-auto font-bold">Buka daftar member →</span>
-        </Link>
+        <Perhatian href="/admin/member" aksi="Buka daftar member">
+          <b>{jumlahGrupBelumDikirim} member baru</b> sudah ikut latihan pertama tapi belum
+          dikonfirmasi dan dikirimi link grup WhatsApp Member.
+        </Perhatian>
       )}
 
       {jumlahMenunggu > 0 && (
-        <Link
-          href="/admin/verifikasi"
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
-        >
-          <span className="text-lg">🔎</span>
-          <span>
-            <b>{jumlahMenunggu} calon member</b> menunggu diverifikasi. Selama belum disetujui,
-            mereka tidak bisa ngelist maupun ikut latihan.
-          </span>
-          <span className="ml-auto font-bold">Periksa sekarang →</span>
-        </Link>
+        <Perhatian href="/admin/verifikasi" aksi="Periksa sekarang">
+          <b>{jumlahMenunggu} calon member</b> menunggu verifikasi. Selama belum disetujui,
+          mereka tidak bisa ngelist maupun ikut latihan.
+        </Perhatian>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="panel grid grid-cols-2 divide-x divide-y divide-[var(--line)] sm:grid-cols-4 sm:divide-y-0">
         <Stat label="Member" value={jumlahMember} />
         <Stat label="Calon member" value={jumlahCalon} />
         <Stat label="Menunggu verifikasi" value={jumlahMenunggu} />
-        <Stat label="Sesi dibuka" value={sesiTerbuka.length} accent />
+        <Stat label="Sesi dibuka" value={sesiTerbuka.length} />
       </div>
 
-      <div className="panel p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-bold">Sesi terbaru</h2>
-          <Link href="/admin/sesi" className="text-sm text-[var(--accent)]">
-            Kelola sesi →
+      <div className="panel">
+        <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
+          <h2>Sesi terbaru</h2>
+          <Link href="/admin/sesi" className="text-sm text-[var(--accent)] hover:underline">
+            Kelola sesi
           </Link>
         </div>
         {sessions.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">
+          <p className="px-4 py-6 text-sm text-[var(--muted)]">
             Belum ada sesi latihan. Buat sesi lebih dulu supaya presensi bisa dibuka.
           </p>
         ) : (
           <ul className="divide-y divide-[var(--line)]">
             {sessions.slice(0, 5).map((s) => (
-              <li key={s.id} className="flex items-center gap-3 py-2.5">
+              <li key={s.id} className="flex items-center gap-3 px-4 py-2.5">
                 <div className="min-w-0">
-                  <Link href={`/admin/sesi/${s.id}`} className="block truncate font-medium">
+                  <Link
+                    href={`/admin/sesi/${s.id}`}
+                    className="block truncate font-medium hover:text-[var(--accent)]"
+                  >
                     {s.title}
                   </Link>
                   <p className="text-xs text-[var(--muted)]">
@@ -108,8 +104,11 @@ function Dashboard() {
                 <span className="ml-auto shrink-0 text-sm text-[var(--muted)]">
                   {s.attendeeCount} hadir
                 </span>
-                <span className={`badge ${s.open ? "badge-member" : "badge-calon"}`}>
-                  {s.open ? "DIBUKA" : "DITUTUP"}
+                <span className="flex w-20 shrink-0 items-center gap-1.5 text-xs">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${s.open ? "bg-green-600" : "bg-gray-400"}`}
+                  />
+                  {s.open ? "Dibuka" : "Ditutup"}
                 </span>
               </li>
             ))}
@@ -120,11 +119,31 @@ function Dashboard() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function Perhatian({
+  href,
+  aksi,
+  children,
+}: {
+  href: string;
+  aksi: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="panel p-4">
-      <p className="text-xs uppercase tracking-wide text-[var(--muted)]">{label}</p>
-      <p className={`mt-1 text-2xl font-black ${accent ? "text-[var(--accent)]" : ""}`}>{value}</p>
+    <Link
+      href={href}
+      className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-[var(--line)] border-l-4 border-l-amber-500 bg-white px-4 py-3 text-sm transition hover:bg-[#fafbfc]"
+    >
+      <span className="min-w-0 flex-1">{children}</span>
+      <span className="shrink-0 font-medium text-[var(--accent)]">{aksi} →</span>
+    </Link>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="px-4 py-3.5">
+      <p className="text-xs text-[var(--muted)]">{label}</p>
+      <p className="mt-0.5 text-2xl font-semibold tabular-nums">{value}</p>
     </div>
   );
 }
