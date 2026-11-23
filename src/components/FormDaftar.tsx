@@ -329,7 +329,7 @@ function Selesai({ sukses }: { sukses: Sukses }) {
         </div>
 
         <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-bold">⏳ Belum bisa langsung ikut latihan ya</p>
+          <p className="font-bold">Belum bisa langsung ikut latihan ya</p>
           <p className="mt-1 text-xs">
             Pengurus memeriksa dulu data tiap pendaftar — terutama riwayat penyakit, trauma air, dan
             kemampuan berenang — demi keamanan di kolam. Kamu akan dihubungi lewat WhatsApp. Begitu
