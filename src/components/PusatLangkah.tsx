@@ -58,7 +58,7 @@ export function PusatLangkah({ memberId, token }: { memberId: string; token: str
   if (url) {
     return (
       <div className="panel mt-4 p-5 text-left">
-        <p className="text-sm font-bold">Satu langkah lagi 🎯</p>
+        <p className="text-sm font-bold">Satu langkah lagi</p>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Formulir MSS Pusat sudah terbuka di tab baru dengan jawaban terisi otomatis. Periksa
           sebentar, lalu tekan <b>Kirim</b> di sana.
