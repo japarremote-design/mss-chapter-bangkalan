@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Palet diambil dari logo MSS: biru laut, biru langit, putih. */
+  /* Palet diambil dari logo MSS: biru laut, biru langit, putih */
   --bg: #f2f8fc;
   --panel: #ffffff;
   --line: #d9e7f2;
@@ -121,6 +121,69 @@ body {
     font-family: ui-serif, Georgia, "Noto Serif", "Times New Roman", serif;
     letter-spacing: -0.01em;
   }
+}
+
+/* ── Tema dasbor pengurus ──────────────────────────
+   Dibatasi di .admin-ui supaya halaman publik tidak ikut berubah.
+   Arahnya: alat kerja internal — netral, rapat, datar (tanpa bayangan,
+   sudut kecil, label kalimat biasa) — bukan dasbor "kartu membulat". */
+.admin-ui {
+  --bg: #f4f5f7;
+  --line: #e1e4e9;
+  --muted: #667180;
+  --ink: #1a2430;
+  --accent-soft: #edf2f7;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.admin-ui .panel {
+  border-radius: 8px;
+  box-shadow: none;
+}
+.admin-ui .rounded-xl,
+.admin-ui .rounded-2xl {
+  border-radius: 8px;
+}
+.admin-ui .btn {
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.admin-ui .btn-primary {
+  font-weight: 600;
+}
+.admin-ui .field {
+  border-radius: 6px;
+  background: #fff;
+}
+.admin-ui .label,
+.admin-ui th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.admin-ui .badge {
+  border-radius: 4px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+.admin-ui h1 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.admin-ui h2 {
+  font-weight: 600;
+}
+.admin-ui .font-mono {
+  white-space: nowrap;
+}
+.admin-ui table tr:hover td {
+  background: #fafbfc;
 }
 
 /* Pembatas gelombang antar-section, mengambil motif ombak dari logo —
