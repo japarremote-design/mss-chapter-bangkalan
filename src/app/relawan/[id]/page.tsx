@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Qr } from "@/components/Qr";
+import { bukaAudio, notifGagal, notifPresensiSukses, notifSudahHadir } from "@/lib/suara";
 import type { AttendanceRecord, RsvpEntry, TrainingSession } from "@/lib/types";
 
 type Payload = {
@@ -78,6 +79,7 @@ function Relawan() {
         if (!r.ok) throw new Error(d.error);
         if (d.alreadyIn) {
           setHasil({ tone: "warn", text: `${d.member.name} sudah tercatat hadir.` });
+          notifSudahHadir(d.member.name);
         } else {
           setHasil({
             tone: "ok",
@@ -85,6 +87,7 @@ function Relawan() {
               ? `${d.member.name} hadir — latihan pertama, statusnya naik jadi MEMBER.`
               : `${d.member.name} tercatat hadir.`,
           });
+          notifPresensiSukses(d.member.name);
           load();
         }
       } catch (err) {
@@ -100,6 +103,7 @@ function Relawan() {
               ? code
               : undefined,
         });
+        notifGagal();
       }
     },
     [id, k, load]
@@ -237,7 +241,10 @@ function Relawan() {
           <div className="space-y-3">
             <div className="panel p-4">
               <button
-                onClick={() => setKameraAktif((v) => !v)}
+                onClick={() => {
+                  bukaAudio();
+                  setKameraAktif((v) => !v);
+                }}
                 className={`btn w-full ${kameraAktif ? "btn-ghost" : "btn-primary"}`}
               >
                 {kameraAktif ? "Matikan kamera" : "Nyalakan kamera"}
@@ -249,6 +256,7 @@ function Relawan() {
               className="panel flex gap-2 p-3"
               onSubmit={(e) => {
                 e.preventDefault();
+                bukaAudio();
                 const code = manual.trim().toUpperCase();
                 if (code) {
                   lastRef.current = { code: "", at: 0 };
