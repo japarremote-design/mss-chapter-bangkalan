@@ -25,16 +25,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen">
-      <header className="no-print border-b border-[var(--line)] bg-[var(--panel)]">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
-          <Link href="/admin" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="MSS" width={32} height={32} />
-            <span className="wordmark leading-tight">
-              MSS <span className="text-[var(--accent)]">Bangkalan</span>
+    <div className="admin-ui min-h-screen">
+      <header className="no-print bg-[#0d2438] text-white">
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-4">
+          <Link href="/admin" className="flex shrink-0 items-center gap-2 py-3">
+            <Image src="/logo.png" alt="MSS" width={28} height={28} />
+            <span className="text-sm font-semibold tracking-tight">
+              MSS Bangkalan <span className="font-normal text-white/50">· Pengurus</span>
             </span>
           </Link>
-          <nav className="flex gap-1">
+          <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-white/60">
+            <span className="hidden sm:inline">{user.email}</span>
+            <button
+              onClick={logout}
+              className="rounded border border-white/25 px-2.5 py-1 text-white/80 transition hover:bg-white/10"
+            >
+              Keluar
+            </button>
+          </div>
+        </div>
+        <nav className="border-t border-white/10">
+          <div className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4">
             {NAV.map((item) => {
               const active =
                 item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
@@ -42,24 +53,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-lg px-3 py-1.5 text-sm ${
+                  className={`-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm transition ${
                     active
-                      ? "bg-[var(--accent)] font-semibold text-white"
-                      : "text-[var(--muted)] hover:bg-[var(--accent-soft)] hover:text-[var(--ink)]"
+                      ? "border-[#4cb8ee] font-medium text-white"
+                      : "border-transparent text-white/60 hover:text-white"
                   }`}
                 >
                   {item.label}
                 </Link>
               );
             })}
-          </nav>
-          <div className="ml-auto flex items-center gap-3 text-xs text-[var(--muted)]">
-            <span className="hidden sm:inline">{user.email}</span>
-            <button onClick={logout} className="btn btn-ghost px-3 py-1 text-xs">
-              Keluar
-            </button>
           </div>
-        </div>
+        </nav>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
     </div>
