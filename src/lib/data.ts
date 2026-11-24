@@ -68,6 +68,7 @@ export function memberFromDoc(
     address: d.address ?? "",
     job: d.job ?? "",
     reason: d.reason ?? "",
+    source: d.source ?? "",
     nickname: d.nickname ?? "",
     age: d.age ?? "",
     gender: d.gender ?? "",

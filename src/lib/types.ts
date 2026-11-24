@@ -16,6 +16,8 @@ export type Member = {
   address?: string;
   job?: string;
   reason?: string;
+  /** Asal data: "web", "web-pendataan-member", dst. */
+  source?: string;
   /** Data pendaftaran calon member (mengikuti formulir MSS). */
   nickname?: string;
   age?: string;
