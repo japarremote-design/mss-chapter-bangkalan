@@ -97,7 +97,7 @@ function Member() {
       ["Riwayat penyakit", (m) => m.healthNotes ?? ""],
       ["Pelatih renang", (m) => m.isSwimCoach ?? ""],
       ["Kenal MSS dari", (m) => m.knowFrom ?? ""],
-      ["Motivasi", (m) => m.reason ?? ""],
+      ["Motivasi / lama ikut MSS", (m) => m.reason ?? ""],
       ["No WhatsApp", (m) => m.phone ?? ""],
       ["Jumlah hadir", (m) => String(m.attendanceCount)],
       ["Terdaftar", (m) => (m.createdAt ? new Date(m.createdAt).toLocaleDateString("id-ID") : "")],
@@ -431,7 +431,14 @@ function Member() {
                       <Baris label="Riwayat penyakit" value={m.healthNotes} penting />
                       <Baris label="Pelatih renang" value={m.isSwimCoach} />
                       <Baris label="Kenal MSS dari" value={m.knowFrom} />
-                      <Baris label="Motivasi" value={m.reason} />
+                      <Baris
+                        label={
+                          m.source === "web-pendataan-member"
+                            ? "Sudah ikut MSS sejak"
+                            : "Motivasi"
+                        }
+                        value={m.reason}
+                      />
                       <Baris
                         label="Terdaftar"
                         value={
