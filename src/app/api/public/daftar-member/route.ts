@@ -37,6 +37,9 @@ export async function POST(req: Request) {
     const name = teks(body.name);
     const phone = teks(body.phone);
     if (name.length < 2) throw new HttpError(400, "Nama lengkap wajib diisi.");
+    for (const [k, label] of [["birthPlace", "Tempat lahir"], ["birthDate", "Tanggal lahir"], ["district", "Kecamatan"], ["city", "Kabupaten/Kota"], ["province", "Provinsi"]] as const) {
+      if (!teks(body[k])) throw new HttpError(400, `${label} wajib diisi.`);
+    }
     if (phone.replace(/\D/g, "").length < 8) throw new HttpError(400, "Nomor WhatsApp wajib diisi.");
 
     const db = adminDb();
@@ -67,6 +70,11 @@ export async function POST(req: Request) {
       isSwimCoach: teks(body.isSwimCoach),
       knowFrom: teks(body.knowFrom),
       reason: teks(body.reason),
+      birthPlace: teks(body.birthPlace),
+      birthDate: teks(body.birthDate),
+      district: teks(body.district),
+      city: teks(body.city),
+      province: teks(body.province),
       note: "",
       status: "member",
       verifikasi: "disetujui",
