@@ -14,6 +14,11 @@ const KOSONG = {
   gender: "",
   religion: "",
   address: "",
+  district: "",
+  city: "Bangkalan",
+  province: "Jawa Timur",
+  birthPlace: "",
+  birthDate: "",
   job: "",
   maritalStatus: "",
   canSwim: "",
@@ -35,6 +40,11 @@ const NAMA_FIELD: Record<Field, string> = {
   gender: "jenis kelamin",
   religion: "agama",
   address: "alamat lengkap",
+  district: "kecamatan",
+  city: "kabupaten/kota",
+  province: "provinsi",
+  birthPlace: "tempat lahir",
+  birthDate: "tanggal lahir",
   job: "pekerjaan",
   maritalStatus: "status pernikahan",
   canSwim: "sudah bisa berenang?",
@@ -42,7 +52,7 @@ const NAMA_FIELD: Record<Field, string> = {
   healthNotes: "riwayat penyakit",
   isSwimCoach: "pelatih renang?",
   knowFrom: "kenal MSS melalui",
-  reason: "motivasi bergabung",
+  reason: "sudah ikut MSS sejak kapan",
   phone: "no. WhatsApp",
   admin: "admin koordinasi",
 };
@@ -51,7 +61,12 @@ const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
   {
     judul: "Kenalan dulu",
     sub: "Data diri untuk pendataan ulang member.",
-    fields: ["name", "nickname", "age", "gender", "religion", "maritalStatus", "address", "job"],
+    fields: ["name", "nickname", "birthPlace", "birthDate", "age", "gender", "religion", "maritalStatus", "job"],
+  },
+  {
+    judul: "Alamat",
+    sub: "Tempat tinggalmu sekarang.",
+    fields: ["address", "district", "city", "province"],
   },
   {
     judul: "Soal air",
@@ -163,6 +178,20 @@ export function FormDaftarMember() {
             />
             <div className="grid gap-5 sm:grid-cols-2">
               <Teks
+                label="Tempat lahir"
+                value={form.birthPlace}
+                onChange={(v) => set("birthPlace", v)}
+                placeholder="mis. Bangkalan"
+              />
+              <Teks
+                label="Tanggal lahir"
+                value={form.birthDate}
+                onChange={(v) => set("birthDate", v)}
+                type="date"
+              />
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Teks
                 label="Usia"
                 value={form.age}
                 onChange={(v) => set("age", v)}
@@ -183,18 +212,32 @@ export function FormDaftarMember() {
               options={["Perempuan", "Laki-laki"]}
             />
             <Teks label="Agama" value={form.religion} onChange={(v) => set("religion", v)} />
-            <Teks
-              label="Alamat lengkap"
-              value={form.address}
-              onChange={(v) => set("address", v)}
-              placeholder="Jalan, RT/RW, kelurahan/desa, kecamatan"
-              area
-            />
             <Teks label="Pekerjaan" value={form.job} onChange={(v) => set("job", v)} />
           </>
         )}
 
         {step === 1 && (
+          <>
+            <Teks
+              label="Alamat lengkap"
+              value={form.address}
+              onChange={(v) => set("address", v)}
+              placeholder="Jalan, RT/RW, kelurahan/desa"
+              area
+            />
+            <Teks label="Kecamatan" value={form.district} onChange={(v) => set("district", v)} />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Teks
+                label="Kabupaten/Kota"
+                value={form.city}
+                onChange={(v) => set("city", v)}
+              />
+              <Teks label="Provinsi" value={form.province} onChange={(v) => set("province", v)} />
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
           <>
             <Pilihan
               label="Sudah bisa berenang?"
@@ -224,7 +267,7 @@ export function FormDaftarMember() {
           </>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <>
             <Teks
               label="Kenal MSS melalui"
@@ -233,7 +276,7 @@ export function FormDaftarMember() {
               placeholder="mis. Instagram, teman, brosur"
             />
             <Teks
-              label="Sejak kapan / sudah berapa lama ikut MSS"
+              label="Sudah ikut MSS sejak kapan?"
               value={form.reason}
               onChange={(v) => set("reason", v)}
               area
@@ -367,6 +410,7 @@ function Teks({
   inputMode,
   hint,
   area,
+  type,
 }: {
   label: string;
   value: string;
@@ -375,6 +419,7 @@ function Teks({
   inputMode?: "numeric" | "tel";
   hint?: string;
   area?: boolean;
+  type?: string;
 }) {
   const id = `m-${label.toLowerCase().replace(/[^a-z]+/g, "-")}`;
   return (
@@ -397,6 +442,7 @@ function Teks({
           id={id}
           className="field"
           required
+          type={type}
           placeholder={placeholder}
           inputMode={inputMode}
           value={value}
