@@ -13,6 +13,13 @@ export async function PATCH(req: Request, { params }: Ctx) {
     const { id } = await params;
     const body = await req.json();
 
+    if (body.pulihkan === true) {
+      const r = adminDb().collection("members").doc(id);
+      await r.update({ deletedAt: null, deletedBy: "" });
+      resetIndeksNama();
+      return Response.json({ member: memberFromDoc(await r.get()) });
+    }
+
     const patch: Record<string, unknown> = {};
     for (const field of ["name", "phone", "address", "job", "reason", "note"] as const) {
       if (typeof body[field] === "string") patch[field] = body[field].trim();
@@ -30,11 +37,25 @@ export async function PATCH(req: Request, { params }: Ctx) {
   }
 }
 
+/**
+ * Default: soft delete — member disembunyikan dari semua daftar, tidak bisa
+ * ngelist/presensi, tapi datanya (termasuk riwayat hadir) tetap ada.
+ * ?permanen=1: hapus betul-betul, hanya untuk yang SUDAH ada di daftar "dihapus".
+ */
 export async function DELETE(req: Request, { params }: Ctx) {
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
     const { id } = await params;
-    await adminDb().collection("members").doc(id).delete();
+    const ref = adminDb().collection("members").doc(id);
+    if (new URL(req.url).searchParams.get("permanen") === "1") {
+      const snap = await ref.get();
+      if (!snap.get("deletedAt")) {
+        throw new HttpError(409, "Hapus biasa dulu (masuk daftar dihapus) sebelum hapus permanen.");
+      }
+      await ref.delete();
+    } else {
+      await ref.update({ deletedAt: new Date().toISOString(), deletedBy: admin.email });
+    }
     resetIndeksNama();
     return Response.json({ ok: true });
   } catch (err) {

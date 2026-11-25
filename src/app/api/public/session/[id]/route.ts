@@ -18,7 +18,7 @@ export async function GET(req: Request, { params }: Ctx) {
     }
 
     const snap = await adminDb().collection("sessions").doc(id).get();
-    if (!snap.exists) throw new HttpError(404, "Sesi tidak ditemukan.");
+    if (!snap.exists || snap.get("deletedAt")) throw new HttpError(404, "Sesi tidak ditemukan.");
     const session = sessionFromDoc(snap);
     if (!session.open) throw new HttpError(409, "Presensi untuk sesi ini sudah ditutup.");
 

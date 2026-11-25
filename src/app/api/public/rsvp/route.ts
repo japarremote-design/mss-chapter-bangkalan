@@ -17,7 +17,7 @@ async function guard(body: { weekId?: string; token?: string }) {
 /** Pastikan sesi yang dituju memang milik minggu di link tersebut. */
 async function assertSessionInWeek(sessionId: string, weekId: string) {
   const snap = await adminDb().collection("sessions").doc(sessionId).get();
-  if (!snap.exists || snap.data()?.weekId !== weekId) {
+  if (!snap.exists || snap.data()?.deletedAt || snap.data()?.weekId !== weekId) {
     throw new HttpError(404, "Sesi tidak ada di jadwal ini.");
   }
 }
@@ -88,7 +88,7 @@ export async function GET(req: Request) {
     const sessions = await db.collection("sessions").where("weekId", "==", weekId).get();
     const joined: string[] = [];
     await Promise.all(
-      sessions.docs.map(async (s) => {
+      sessions.docs.filter((s) => !s.get("deletedAt")).map(async (s) => {
         const hit = await s.ref.collection("rsvp").doc(memberId).get();
         if (hit.exists) joined.push(s.id);
       })

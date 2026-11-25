@@ -12,7 +12,7 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
     .limit(1)
     .get();
 
-  if (snap.empty) {
+  if (snap.empty || snap.docs[0].get("deletedAt")) {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm items-center justify-center px-5">
         <p className="text-sm text-[var(--muted)]">Kartu tidak ditemukan.</p>

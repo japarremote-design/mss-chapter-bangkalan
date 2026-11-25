@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   try {
     await requireAdmin(req);
-    return Response.json({ schedules: await listSchedules() });
+    const dihapus = new URL(req.url).searchParams.get("dihapus") === "1";
+    return Response.json({ schedules: await listSchedules({ dihapus }) });
   } catch (err) {
     return errorResponse(err);
   }

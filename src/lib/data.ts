@@ -69,6 +69,8 @@ export function memberFromDoc(
     job: d.job ?? "",
     reason: d.reason ?? "",
     source: d.source ?? "",
+    deletedAt: d.deletedAt ?? null,
+    deletedBy: d.deletedBy ?? "",
     nickname: d.nickname ?? "",
     age: d.age ?? "",
     gender: d.gender ?? "",
@@ -119,6 +121,7 @@ export function sessionFromDoc(
     coaches: Array.isArray(d.coaches) ? d.coaches : [],
     fee: d.fee ?? "",
     weekId: d.weekId ?? undefined,
+    deletedAt: d.deletedAt ?? null,
   };
 }
 
@@ -154,8 +157,8 @@ export async function joinSession(sessionId: string, memberId: string) {
       tx.get(memberRef),
       tx.get(rsvpRef),
     ]);
-    if (!sessionSnap.exists) throw new HttpError(404, "Sesi latihan tidak ditemukan.");
-    if (!memberSnap.exists) throw new HttpError(404, "Data member tidak ditemukan.");
+    if (!sessionSnap.exists || sessionSnap.get("deletedAt")) throw new HttpError(404, "Sesi latihan tidak ditemukan.");
+    if (!memberSnap.exists || memberSnap.get("deletedAt")) throw new HttpError(404, "Data member tidak ditemukan.");
 
     const session = sessionFromDoc(sessionSnap);
     if (rsvpSnap.exists) return { alreadyIn: true, session };
@@ -241,8 +244,8 @@ export async function recordAttendance(opts: {
       tx.get(rsvpRef),
     ]);
 
-    if (!sessionSnap.exists) throw new HttpError(404, "Sesi latihan tidak ditemukan.");
-    if (!memberSnap.exists) throw new HttpError(404, "Data member tidak ditemukan.");
+    if (!sessionSnap.exists || sessionSnap.get("deletedAt")) throw new HttpError(404, "Sesi latihan tidak ditemukan.");
+    if (!memberSnap.exists || memberSnap.get("deletedAt")) throw new HttpError(404, "Data member tidak ditemukan.");
 
     const session = sessionFromDoc(sessionSnap);
     if (!session.open) throw new HttpError(409, "Presensi untuk sesi ini sudah ditutup.");
@@ -342,11 +345,11 @@ export async function cariNama(q: string, batas = 12) {
   if (!indeksNama || now - indeksNama.at > INDEKS_UMUR_MS) {
     const snap = await adminDb()
       .collection("members")
-      .select("name", "status", "verifikasi", "verifikasiCatatan")
+      .select("name", "status", "verifikasi", "verifikasiCatatan", "deletedAt")
       .get();
     indeksNama = {
       at: now,
-      data: snap.docs.map((d) => ({
+      data: snap.docs.filter((d) => !d.get("deletedAt")).map((d) => ({
         id: d.id,
         name: String(d.get("name") ?? ""),
         status: (d.get("status") as MemberStatus) ?? "calon",
@@ -378,11 +381,14 @@ export function scheduleFromDoc(
     pool: d.pool ?? "",
     status: (d.status as ScheduleStatus) === "Penuh" ? "Penuh" : "Tersedia",
     order: typeof d.order === "number" ? d.order : 0,
+    deletedAt: d.deletedAt ?? null,
   };
 }
 
 /** Jadwal latihan, urut sesuai kolom order. Aman dipanggil saat DB kosong. */
-export async function listSchedules(): Promise<Schedule[]> {
+export async function listSchedules(opts: { dihapus?: boolean } = {}): Promise<Schedule[]> {
   const snap = await adminDb().collection("schedules").orderBy("order").get();
-  return snap.docs.map(scheduleFromDoc);
+  return snap.docs
+    .map(scheduleFromDoc)
+    .filter((s) => (opts.dihapus ? Boolean(s.deletedAt) : !s.deletedAt));
 }

@@ -63,7 +63,7 @@ function Jadwal() {
   }
 
   async function hapus(s: Schedule) {
-    if (!confirm(`Hapus jadwal ${s.day} ${s.time}?`)) return;
+    if (!confirm(`Hapus jadwal ${s.day} ${s.time}? Disembunyikan dan bisa dipulihkan lewat menu Sampah.`)) return;
     try {
       await api(`/api/admin/jadwal/${s.id}`, { method: "DELETE" });
       setItems((prev) => prev.filter((x) => x.id !== s.id));

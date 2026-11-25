@@ -35,7 +35,7 @@ export const FIELD_TAMBAHAN = ["birthPlace", "birthDate", "district", "city", "p
 
 export async function getPusatConfig(): Promise<PusatConfig | null> {
   const snap = await adminDb().collection("config").doc("pusat").get();
-  if (!snap.exists) return null;
+  if (!snap.exists || snap.get("deletedAt")) return null;
   const d = snap.data() ?? {};
   return {
     formUrl: d.formUrl ?? "",

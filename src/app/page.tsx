@@ -239,7 +239,7 @@ function Daftar() {
         <div className="mb-5 text-center">
           <h2 className="font-display text-2xl font-semibold sm:text-3xl">Gabung Skuad</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Terbuka untuk muslimah usia 15 tahun ke atas — sekitar 2 menit, dibagi 3 langkah..
+            Terbuka untuk muslimah usia 15 tahun ke atas — sekitar 2 menit, dibagi 3 langkah.
           </p>
         </div>
 

@@ -18,6 +18,9 @@ export type Member = {
   reason?: string;
   /** Asal data: "web", "web-pendataan-member", dst. */
   source?: string;
+  /** Soft delete: terisi = disembunyikan dari semua daftar, data tetap ada. */
+  deletedAt?: string | null;
+  deletedBy?: string;
   /** Data pendaftaran calon member (mengikuti formulir MSS). */
   nickname?: string;
   age?: string;
@@ -66,6 +69,7 @@ export type TrainingSession = {
   startTime?: string;
   location?: string;
   open: boolean;
+  deletedAt?: string | null;
   createdAt: string;
   createdBy: string;
   attendeeCount: number;
@@ -98,6 +102,7 @@ export type Schedule = {
   pool: string;
   status: ScheduleStatus;
   order: number;
+  deletedAt?: string | null;
 };
 
 /** Satu paket jadwal mingguan yang dibuat relawan pelatih tiap Senin. */

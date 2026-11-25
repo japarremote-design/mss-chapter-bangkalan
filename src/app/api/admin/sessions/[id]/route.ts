@@ -56,23 +56,22 @@ export async function PATCH(req: Request, { params }: Ctx) {
   }
 }
 
+/**
+ * Soft delete: sesi disembunyikan dari semua daftar & tidak bisa dipakai lagi,
+ * tapi data sesi, daftar ikut, dan daftar hadir TETAP ada di database.
+ * Untuk memulihkan, hapus kolom deletedAt di Firestore.
+ */
 export async function DELETE(req: Request, { params }: Ctx) {
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
     const { id } = await params;
     const db = adminDb();
     const ref = db.collection("sessions").doc(id);
     const snap = await ref.get();
-    // Subkoleksi tidak ikut terhapus otomatis — daftar hadir dan daftar ikut
-    // harus dibersihkan sendiri supaya tidak jadi data yatim.
-    const [attendance, rsvp] = await Promise.all([
-      ref.collection("attendance").get(),
-      ref.collection("rsvp").get(),
-    ]);
+    if (!snap.exists) throw new HttpError(404, "Sesi tidak ditemukan.");
+    if (snap.get("deletedAt")) return Response.json({ ok: true });
     const batch = db.batch();
-    attendance.docs.forEach((d) => batch.delete(d.ref));
-    rsvp.docs.forEach((d) => batch.delete(d.ref));
-    batch.delete(ref);
+    batch.update(ref, { deletedAt: new Date().toISOString(), deletedBy: admin.email });
     const weekId = snap.data()?.weekId;
     if (weekId) {
       batch.update(db.collection("weeks").doc(String(weekId)), {

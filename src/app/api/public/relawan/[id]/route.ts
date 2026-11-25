@@ -26,7 +26,7 @@ export async function GET(req: Request, { params }: Ctx) {
       ref.collection("attendance").orderBy("at", "desc").get(),
       listRsvp(id),
     ]);
-    if (!snap.exists) throw new HttpError(404, "Sesi tidak ditemukan.");
+    if (!snap.exists || snap.get("deletedAt")) throw new HttpError(404, "Sesi tidak ditemukan.");
 
     const sesi = sessionFromDoc(snap);
     const waktu = cekWaktuPresensi(sesi.date, sesi.startTime ?? "");

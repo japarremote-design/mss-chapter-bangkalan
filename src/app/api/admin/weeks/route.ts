@@ -25,7 +25,7 @@ export async function GET(req: Request) {
         return {
           ...week,
           token: linkToken(week.id),
-          sessions: sessions.docs.map(sessionFromDoc).sort((a, b) => a.date.localeCompare(b.date)),
+          sessions: sessions.docs.map(sessionFromDoc).filter((s) => !s.deletedAt).sort((a, b) => a.date.localeCompare(b.date)),
         };
       })
     );
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     const hasilQuery = await Promise.all(
       potongan.map((p) => db.collection("sessions").where("date", "in", p).get())
     );
-    const existing = hasilQuery.flatMap((q) => q.docs);
+    const existing = hasilQuery.flatMap((q) => q.docs).filter((d) => !d.get("deletedAt"));
 
     const batch = db.batch();
     batch.set(weekRef, week);

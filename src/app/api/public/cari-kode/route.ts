@@ -26,6 +26,9 @@ export async function POST(req: Request) {
     }
 
     const m = snap.docs[0].data();
+    if (m.deletedAt) {
+      throw new HttpError(404, "Tidak ditemukan. Cek lagi nomornya, atau hubungi admin.");
+    }
     const namaCocok = name.length < 2 || String(m.name ?? "").toLowerCase().includes(name);
     if (!namaCocok) {
       throw new HttpError(404, "Nama dan nomor tidak cocok. Hubungi admin kalau yakin sudah terdata.");

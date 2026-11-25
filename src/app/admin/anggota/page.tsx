@@ -63,7 +63,7 @@ function Anggota() {
   }
 
   async function hapus(m: Member) {
-    if (!confirm(`Hapus ${m.name}? Riwayat presensi yang sudah tercatat tidak ikut terhapus.`)) return;
+    if (!confirm(`Hapus ${m.name}? Datanya masuk menu Sampah dan bisa dipulihkan.`)) return;
     try {
       await api(`/api/admin/members/${m.id}`, { method: "DELETE" });
       setMembers((prev) => prev.filter((x) => x.id !== m.id));

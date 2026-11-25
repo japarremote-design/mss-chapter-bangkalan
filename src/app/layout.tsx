@@ -3,7 +3,7 @@ import { SITE } from "@/lib/config";
 import "./globals.css";
 
 /**
- * URL publik situs — dipakai untuk membuat URL absolut pada tag Open Graph..
+ * URL publik situs — dipakai untuk membuat URL absolut pada tag Open Graph.
  * Vercel mengisi VERCEL_PROJECT_PRODUCTION_URL otomatis, tapi sebaiknya set
  * NEXT_PUBLIC_SITE_URL sendiri supaya domain kustom ikut terpakai.
  */

@@ -26,6 +26,7 @@ export async function GET(req: Request, { params }: Ctx) {
     const week = weekFromDoc(weekSnap);
     const urut = sessionSnap.docs
       .map(sessionFromDoc)
+      .filter((s) => !s.deletedAt)
       .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
 
     const sessions = await Promise.all(

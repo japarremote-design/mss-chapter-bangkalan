@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       .orderBy("date", "desc")
       .limit(100)
       .get();
-    return Response.json({ sessions: snap.docs.map(sessionFromDoc) });
+    return Response.json({ sessions: snap.docs.map(sessionFromDoc).filter((s) => !s.deletedAt) });
   } catch (err) {
     return errorResponse(err);
   }

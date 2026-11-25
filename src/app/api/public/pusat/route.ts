@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 async function ambilMember(memberId: string, token: string) {
   if (!verifyLinkToken(memberId, token)) throw new HttpError(401, "Tautan tidak valid.");
   const snap = await adminDb().collection("members").doc(memberId).get();
-  if (!snap.exists) throw new HttpError(404, "Data member tidak ditemukan.");
+  if (!snap.exists || snap.get("deletedAt")) throw new HttpError(404, "Data member tidak ditemukan.");
   return memberFromDoc(snap);
 }
 

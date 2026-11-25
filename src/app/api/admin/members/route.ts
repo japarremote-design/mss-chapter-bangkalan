@@ -9,7 +9,9 @@ export async function GET(req: Request) {
   try {
     await requireAdmin(req);
     const snap = await adminDb().collection("members").orderBy("name").get();
-    return Response.json({ members: snap.docs.map(memberFromDoc) });
+    const dihapus = new URL(req.url).searchParams.get("dihapus") === "1";
+    const members = snap.docs.map(memberFromDoc).filter((m) => Boolean(m.deletedAt) === dihapus);
+    return Response.json({ members });
   } catch (err) {
     return errorResponse(err);
   }

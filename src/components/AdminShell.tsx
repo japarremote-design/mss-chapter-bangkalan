@@ -12,6 +12,7 @@ const NAV = [
   { href: "/admin/member", label: "Member" },
   { href: "/admin/jadwal", label: "Jadwal" },
   { href: "/admin/pusat", label: "MSS Pusat" },
+  { href: "/admin/sampah", label: "Sampah" },
   { href: "/admin/pengaturan", label: "Pengaturan" },
 ];
 

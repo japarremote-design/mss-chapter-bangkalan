@@ -78,8 +78,12 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    await requireAdmin(req);
-    await adminDb().collection("config").doc("pusat").delete();
+    const admin = await requireAdmin(req);
+    // Soft delete: konfigurasi tetap tersimpan, hanya dianggap tidak tersambung.
+    await adminDb()
+      .collection("config")
+      .doc("pusat")
+      .set({ deletedAt: new Date().toISOString(), deletedBy: admin.email }, { merge: true });
     return Response.json({ ok: true });
   } catch (err) {
     return errorResponse(err);
