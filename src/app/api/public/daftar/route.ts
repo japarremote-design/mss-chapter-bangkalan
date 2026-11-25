@@ -57,6 +57,11 @@ export async function POST(req: Request) {
       isSwimCoach: teks(body.isSwimCoach ?? body.pelatihRenang),
       knowFrom: teks(body.knowFrom ?? body.kenalMelalui),
       reason: teks(body.reason ?? body.motivasi ?? body.alasan),
+      birthPlace: teks(body.birthPlace ?? body.tempatLahir),
+      birthDate: teks(body.birthDate ?? body.tanggalLahir),
+      district: teks(body.district ?? body.kecamatan),
+      city: teks(body.city ?? body.kota),
+      province: teks(body.province ?? body.provinsi),
       note: "",
       status: "calon",
       // Wajib lolos screening pengurus dulu sebelum boleh ikut latihan.
