@@ -14,6 +14,11 @@ const KOSONG = {
   gender: "",
   religion: "",
   address: "",
+  birthPlace: "",
+  birthDate: "",
+  district: "",
+  city: "Bangkalan",
+  province: "Jawa Timur",
   job: "",
   maritalStatus: "",
   canSwim: "",
@@ -34,7 +39,12 @@ const NAMA_FIELD: Record<Field, string> = {
   age: "usia",
   gender: "jenis kelamin",
   religion: "agama",
-  address: "alamat domisili",
+  address: "alamat lengkap",
+  birthPlace: "tempat lahir",
+  birthDate: "tanggal lahir",
+  district: "kecamatan",
+  city: "kabupaten/kota",
+  province: "provinsi",
   job: "pekerjaan",
   maritalStatus: "status pernikahan",
   canSwim: "sudah bisa berenang?",
@@ -51,7 +61,7 @@ const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
   {
     judul: "Kenalan dulu",
     sub: "Data diri untuk pendataan member.",
-    fields: ["name", "nickname", "age", "gender", "religion", "maritalStatus", "address", "job"],
+    fields: ["name", "nickname", "birthPlace", "birthDate", "age", "gender", "religion", "maritalStatus", "address", "district", "city", "province", "job"],
   },
   {
     judul: "Soal air",
@@ -164,6 +174,20 @@ export function FormDaftar() {
             />
             <div className="grid gap-5 sm:grid-cols-2">
               <Teks
+                label="Tempat lahir"
+                value={form.birthPlace}
+                onChange={(v) => set("birthPlace", v)}
+                placeholder="mis. Bangkalan"
+              />
+              <Teks
+                label="Tanggal lahir"
+                value={form.birthDate}
+                onChange={(v) => set("birthDate", v)}
+                type="date"
+              />
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Teks
                 label="Usia"
                 value={form.age}
                 onChange={(v) => set("age", v)}
@@ -189,9 +213,14 @@ export function FormDaftar() {
               label="Alamat lengkap"
               value={form.address}
               onChange={(v) => set("address", v)}
-              placeholder="Jalan, desa/kelurahan, kecamatan, kota"
+              placeholder="Jalan, RT/RW, desa/kelurahan"
               area
             />
+            <Teks label="Kecamatan" value={form.district} onChange={(v) => set("district", v)} />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Teks label="Kabupaten/Kota" value={form.city} onChange={(v) => set("city", v)} />
+              <Teks label="Provinsi" value={form.province} onChange={(v) => set("province", v)} />
+            </div>
             <Teks label="Pekerjaan" value={form.job} onChange={(v) => set("job", v)} />
             {usiaKurang && (
               <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
@@ -408,6 +437,7 @@ function Teks({
   inputMode,
   hint,
   area,
+  type,
 }: {
   label: string;
   value: string;
@@ -416,6 +446,7 @@ function Teks({
   inputMode?: "numeric" | "tel";
   hint?: string;
   area?: boolean;
+  type?: string;
 }) {
   const id = label.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
@@ -440,6 +471,7 @@ function Teks({
           required
           placeholder={placeholder}
           inputMode={inputMode}
+          type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
