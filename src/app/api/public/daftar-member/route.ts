@@ -83,6 +83,7 @@ export async function POST(req: Request) {
       verifikasiCatatan: "Member lama, pendataan ulang pasca reset database — tidak melalui alur verifikasi calon member.",
       grupMemberDikirimAt: now,
       grupMemberDikirimBy: "pendataan-ulang",
+      pusatOpenedAt: now, // sebelumnya sudah lapor lewat Google Form
       attendanceCount: 0,
       firstAttendedAt: null,
       lastAttendedAt: null,
