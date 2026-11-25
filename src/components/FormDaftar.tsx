@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ADMIN_CONTACTS, waLink } from "@/lib/config";
 import { useGrupWa } from "./useGrupWa";
+import { Qr } from "./Qr";
 
 type Sukses = { code: string; name: string; adminPhone: string };
 
@@ -178,10 +179,11 @@ export function FormDaftar() {
             />
             <Teks label="Agama" value={form.religion} onChange={(v) => set("religion", v)} />
             <Teks
-              label="Alamat domisili"
+              label="Alamat lengkap"
               value={form.address}
               onChange={(v) => set("address", v)}
-              placeholder="Kecamatan / desa cukup"
+              placeholder="Jalan, desa/kelurahan, kecamatan, kota"
+              area
             />
             <Teks label="Pekerjaan" value={form.job} onChange={(v) => set("job", v)} />
             {usiaKurang && (
@@ -323,17 +325,29 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           <p className="mt-1 font-mono text-2xl font-black tracking-widest text-[var(--accent)]">
             {sukses.code}
           </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
-            Tunjukkan ke relawan pelatih saat latihan pertama.
+          <div className="mt-3 flex justify-center">
+            <div className="rounded-xl bg-white p-3">
+              <Qr value={sukses.code} size={200} />
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-[var(--muted)]">
+            QR ini dipindai relawan pelatih saat latihan (setelah pendaftaranmu disetujui). Simpan
+            atau cetak lewat halaman kartu.
           </p>
+          <a
+            href={`/kartu/${sukses.code}`}
+            className="btn btn-ghost mt-3 w-full text-sm"
+          >
+            Buka halaman kartu (buat disimpan/dicetak) →
+          </a>
         </div>
 
         <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-bold">Belum bisa langsung ikut latihan ya</p>
           <p className="mt-1 text-xs">
             Pengurus memeriksa dulu data tiap pendaftar — terutama riwayat penyakit, trauma air, dan
-            kemampuan berenang — demi keamanan di kolam. Kamu akan dihubungi lewat WhatsApp. Begitu
-            disetujui, kamu baru bisa ngelist lewat link jadwal yang dishare di grup.
+            kemampuan berenang — demi keamanan di kolam. Silakan klik link 1 di bawah untuk
+            mengajukan masuk grup WhatsApp calon member. Begitu disetujui, kamu baru bisa ngelist lewat link jadwal yang dishare di grup.
           </p>
         </div>
 
