@@ -71,6 +71,7 @@ export function FormDaftar() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sukses, setSukses] = useState<Sukses | null>(null);
+  const grupWa = useGrupWa();
 
   const set = (k: Field, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -99,6 +100,10 @@ export function FormDaftar() {
     }
     setBusy(true);
     setError("");
+    // Buka tab kosong SEKARANG (masih dalam klik pengguna, jadi tidak diblokir
+    // browser), lalu diarahkan ke grup WhatsApp begitu pendaftaran berhasil —
+    // supaya tidak ada yang lupa menekan tombol gabung grup.
+    const tabGrup = grupWa.calon ? window.open("about:blank", "_blank") : null;
     try {
       const res = await fetch("/api/public/daftar", {
         method: "POST",
@@ -108,7 +113,9 @@ export function FormDaftar() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? data.message ?? "Gagal mendaftar.");
       setSukses({ code: data.code, name: form.name, adminPhone: form.admin });
+      if (tabGrup && grupWa.calon) tabGrup.location.href = grupWa.calon;
     } catch (err) {
+      tabGrup?.close();
       setError((err as Error).message);
     } finally {
       setBusy(false);
@@ -351,7 +358,12 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           </p>
         </div>
 
-        <p className="mt-5 mb-2 text-sm font-semibold">Dua langkah terakhir:</p>
+        <p className="mt-5 mb-1 text-sm font-semibold">Dua langkah terakhir:</p>
+        {grup.calon && (
+          <p className="mb-2 text-xs text-[var(--muted)]">
+            Tab grup WhatsApp seharusnya terbuka otomatis. Kalau tidak muncul, klik tombol 1 di bawah.
+          </p>
+        )}
         <div className="space-y-2">
           {grup.calon && (
             <a
