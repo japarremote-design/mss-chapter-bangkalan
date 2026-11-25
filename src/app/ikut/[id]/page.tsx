@@ -295,7 +295,7 @@ function Ikut() {
                 </p>
                 <p className="mt-1 text-xs">
                   {me.verifikasi === "menunggu"
-                    ? "Pengurus memeriksa dulu data kesehatan dan kemampuan renang tiap pendaftar demi keamanan di kolam. Kamu akan dihubungi lewat WhatsApp. Setelah disetujui, buka lagi halaman ini untuk ngelist."
+                    ? "Pengurus memeriksa dulu data kesehatan dan kemampuan renang tiap pendaftar demi keamanan di kolam. Setelah disetujui, buka lagi halaman ini untuk ngelist."
                     : "Silakan hubungi admin MSS untuk keterangan lebih lanjut."}
                 </p>
                 {me.catatan && (
