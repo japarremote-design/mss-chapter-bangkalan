@@ -206,6 +206,22 @@ function Member() {
           </p>
           <div className="flex flex-wrap gap-2">
             <button
+              onClick={async () => {
+                if (!confirm("Tandai SUDAH LAPOR untuk semua member yang mengisi lewat form pendataan ulang?")) return;
+                try {
+                  const d = await api<{ diperbarui: number }>("/api/admin/members/tandai-lapor", { method: "POST" });
+                  const l = await api<{ members: Member[] }>("/api/admin/members");
+                  setMembers(l.members);
+                  alert(`${d.diperbarui} member ditandai sudah lapor.`);
+                } catch (err) {
+                  setError((err as Error).message);
+                }
+              }}
+              className="btn btn-ghost px-3 py-1 text-xs"
+            >
+              Tandai semua sudah lapor
+            </button>
+            <button
               onClick={() => navigator.clipboard?.writeText(linkPendataan)}
               className="btn btn-ghost px-3 py-1 text-xs"
             >
