@@ -91,6 +91,39 @@ export type AttendanceRecord = {
   status: MemberStatus;
   method: "mandiri" | "scan-kartu";
   at: string;
+  /** Kosong = peserta biasa. "pelatih" = relawan pelatih yang hadir melatih. */
+  peran?: "peserta" | "pelatih";
+};
+
+/** Relawan Pelatih (RP) — daftar terpisah dari member. Sudah ikut TFT & berhak melatih/mengabsen. */
+export type Pelatih = {
+  id: string;
+  code: string;
+  name: string;
+  nickname: string;
+  phone: string;
+  age: string;
+  gender: string;
+  religion: string;
+  maritalStatus: string;
+  job: string;
+  birthPlace: string;
+  birthDate: string;
+  address: string;
+  district: string;
+  city: string;
+  province: string;
+  /** "Ya" = sudah ikut TFT. */
+  tftSudah: string;
+  /** Tahun / angkatan TFT. */
+  tftInfo: string;
+  note: string;
+  source: string;
+  attendanceCount: number;
+  lastAttendedAt: string | null;
+  createdAt: string;
+  deletedAt?: string | null;
+  deletedBy?: string;
 };
 
 export type ScheduleStatus = "Tersedia" | "Penuh";

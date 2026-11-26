@@ -169,7 +169,7 @@ function Detail() {
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <h2 className="font-bold">Kehadiran</h2>
             <span className="ml-auto text-sm text-[var(--muted)]">
-              <b className="text-[var(--ink)]">{attendance.length}</b> hadir dari{" "}
+              <b className="text-[var(--ink)]">{attendance.filter((a) => a.peran !== "pelatih").length}</b> hadir dari{" "}
               <b className="text-[var(--ink)]">{rsvp.length}</b> yang ngelist
             </span>
           </div>
@@ -186,13 +186,17 @@ function Detail() {
                 <div className="min-w-0">
                   <p className="truncate font-medium">
                     {a.name}{" "}
-                    <span
-                      className={`badge ${
-                        statusById.get(a.memberId) === "calon" ? "badge-calon" : "badge-member"
-                      }`}
-                    >
-                      {statusById.get(a.memberId) === "calon" ? "CALON" : "MEMBER"}
-                    </span>
+                    {a.peran === "pelatih" ? (
+                      <span className="badge bg-[var(--accent-soft)] text-[var(--accent)]">PELATIH</span>
+                    ) : (
+                      <span
+                        className={`badge ${
+                          statusById.get(a.memberId) === "calon" ? "badge-calon" : "badge-member"
+                        }`}
+                      >
+                        {statusById.get(a.memberId) === "calon" ? "CALON" : "MEMBER"}
+                      </span>
+                    )}
                   </p>
                   <p className="font-mono text-xs text-[var(--muted)]">{a.code}</p>
                 </div>

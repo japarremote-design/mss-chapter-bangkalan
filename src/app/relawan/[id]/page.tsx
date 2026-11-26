@@ -83,7 +83,9 @@ function Relawan() {
         } else {
           setHasil({
             tone: "ok",
-            text: d.promoted
+            text: d.peran === "pelatih"
+              ? `${d.member.name} (relawan pelatih) tercatat hadir.`
+              : d.promoted
               ? `${d.member.name} hadir — latihan pertama, statusnya naik jadi MEMBER.`
               : `${d.member.name} tercatat hadir.`,
           });
@@ -188,7 +190,7 @@ function Relawan() {
 
         <div className="panel flex items-center gap-3 p-3 text-sm">
           <span>
-            <b>{attendance.length}</b> hadir
+            <b>{attendance.filter((a) => a.peran !== "pelatih").length}</b> hadir
           </span>
           <span className="text-[var(--muted)]">dari {rsvp.length} yang ngelist</span>
           <span
@@ -296,6 +298,9 @@ function Relawan() {
             {attendance.map((a) => (
               <li key={a.memberId} className="flex items-center gap-2 py-2">
                 <span className="truncate">{a.name}</span>
+                {a.peran === "pelatih" && (
+                  <span className="badge bg-[var(--accent-soft)] text-[var(--accent)]">PELATIH</span>
+                )}
                 <span className="ml-auto text-xs text-[var(--muted)]">
                   {new Date(a.at).toLocaleTimeString("id-ID", {
                     hour: "2-digit",

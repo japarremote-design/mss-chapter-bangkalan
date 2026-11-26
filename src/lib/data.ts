@@ -7,6 +7,7 @@ import type {
   AttendanceRecord,
   Member,
   MemberStatus,
+  Pelatih,
   RsvpEntry,
   Schedule,
   ScheduleStatus,
@@ -54,6 +55,109 @@ export async function createUniqueCode(): Promise<string> {
     if (hit.empty) return code;
   }
   throw new HttpError(500, "Gagal membuat kode unik, coba lagi.");
+}
+
+/** Kode RP sengaja berawalan "RP-" supaya tidak pernah bentrok dengan kode member. */
+export async function createUniqueCodePelatih(): Promise<string> {
+  const db = adminDb();
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const code = generateCode().replace(/^MSS-/, "RP-");
+    const hit = await db.collection("pelatih").where("code", "==", code).limit(1).get();
+    if (hit.empty) return code;
+  }
+  throw new HttpError(500, "Gagal membuat kode unik, coba lagi.");
+}
+
+export function pelatihFromDoc(
+  doc: FirebaseFirestore.QueryDocumentSnapshot | FirebaseFirestore.DocumentSnapshot
+): Pelatih {
+  const d = doc.data() ?? {};
+  return {
+    id: doc.id,
+    code: d.code ?? "",
+    name: d.name ?? "",
+    nickname: d.nickname ?? "",
+    phone: d.phone ?? "",
+    age: d.age ?? "",
+    gender: d.gender ?? "",
+    religion: d.religion ?? "",
+    maritalStatus: d.maritalStatus ?? "",
+    job: d.job ?? "",
+    birthPlace: d.birthPlace ?? "",
+    birthDate: d.birthDate ?? "",
+    address: d.address ?? "",
+    district: d.district ?? "",
+    city: d.city ?? "",
+    province: d.province ?? "",
+    tftSudah: d.tftSudah ?? "",
+    tftInfo: d.tftInfo ?? "",
+    note: d.note ?? "",
+    source: d.source ?? "",
+    attendanceCount: d.attendanceCount ?? 0,
+    lastAttendedAt: d.lastAttendedAt ?? null,
+    createdAt: d.createdAt ?? "",
+    deletedAt: d.deletedAt ?? null,
+    deletedBy: d.deletedBy ?? "",
+  };
+}
+
+/** Cari RP (yang belum dihapus) dari kode kartunya. */
+export async function cariPelatihByCode(code: string) {
+  const hit = await adminDb().collection("pelatih").where("code", "==", code).limit(1).get();
+  if (hit.empty || hit.docs[0].get("deletedAt")) return null;
+  return hit.docs[0];
+}
+
+/**
+ * Presensi Relawan Pelatih (RP) — saat melatih atau kegiatan lain.
+ * Tidak lewat gerbang ngelist/verifikasi seperti peserta, dan TIDAK dihitung
+ * sebagai peserta (attendeeCount tidak bertambah); tampil dengan peran "pelatih".
+ */
+export async function recordAttendancePelatih(opts: {
+  sessionId: string;
+  pelatihId: string;
+  method: AttendanceRecord["method"];
+}): Promise<{ record: AttendanceRecord; alreadyIn: boolean }> {
+  const db = adminDb();
+  const sessionRef = db.collection("sessions").doc(opts.sessionId);
+  const pelatihRef = db.collection("pelatih").doc(opts.pelatihId);
+  const recordRef = sessionRef.collection("attendance").doc(opts.pelatihId);
+
+  return db.runTransaction(async (tx) => {
+    const [sessionSnap, pelatihSnap, recordSnap] = await Promise.all([
+      tx.get(sessionRef),
+      tx.get(pelatihRef),
+      tx.get(recordRef),
+    ]);
+    if (!sessionSnap.exists || sessionSnap.get("deletedAt")) {
+      throw new HttpError(404, "Sesi latihan tidak ditemukan.");
+    }
+    if (!pelatihSnap.exists || pelatihSnap.get("deletedAt")) {
+      throw new HttpError(404, "Data relawan pelatih tidak ditemukan.");
+    }
+    if (!sessionSnap.get("open")) throw new HttpError(409, "Presensi untuk sesi ini sudah ditutup.");
+
+    if (recordSnap.exists) {
+      return { record: recordSnap.data() as AttendanceRecord, alreadyIn: true };
+    }
+    const now = new Date().toISOString();
+    const p = pelatihFromDoc(pelatihSnap);
+    const record: AttendanceRecord = {
+      memberId: p.id,
+      code: p.code,
+      name: p.name,
+      status: "member",
+      method: opts.method,
+      at: now,
+      peran: "pelatih",
+    };
+    tx.set(recordRef, record);
+    tx.update(pelatihRef, {
+      attendanceCount: FieldValue.increment(1),
+      lastAttendedAt: now,
+    });
+    return { record, alreadyIn: false };
+  });
 }
 
 export function memberFromDoc(

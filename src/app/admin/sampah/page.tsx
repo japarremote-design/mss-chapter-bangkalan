@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { useAdmin } from "@/components/useAdmin";
-import type { Member, Schedule } from "@/lib/types";
+import type { Member, Pelatih, Schedule } from "@/lib/types";
 
 export default function SampahPage() {
   return (
@@ -17,11 +17,15 @@ function Sampah() {
   const { user, api } = useAdmin();
   const [members, setMembers] = useState<Member[]>([]);
   const [jadwal, setJadwal] = useState<Schedule[]>([]);
+  const [pelatih, setPelatih] = useState<Pelatih[]>([]);
   const [error, setError] = useState("");
 
   const muat = useCallback(() => {
     api<{ members: Member[] }>("/api/admin/members?dihapus=1")
       .then((d) => setMembers(d.members))
+      .catch((e) => setError(e.message));
+    api<{ pelatih: Pelatih[] }>("/api/admin/pelatih?dihapus=1")
+      .then((d) => setPelatih(d.pelatih))
       .catch((e) => setError(e.message));
     api<{ schedules: Schedule[] }>("/api/admin/jadwal?dihapus=1")
       .then((d) => setJadwal(d.schedules))
@@ -51,6 +55,16 @@ function Sampah() {
       setMembers((p) => p.filter((x) => x.id !== m.id))
     );
   };
+  const pulihkanPelatih = (p: Pelatih) =>
+    aksi(`/api/admin/pelatih/${p.id}`, { method: "PATCH", body: JSON.stringify({ pulihkan: true }) }, () =>
+      setPelatih((x) => x.filter((y) => y.id !== p.id))
+    );
+  const permanenPelatih = (p: Pelatih) => {
+    if (!confirm(`HAPUS PERMANEN ${p.name}? Data tidak bisa dikembalikan lagi.`)) return;
+    aksi(`/api/admin/pelatih/${p.id}?permanen=1`, { method: "DELETE" }, () =>
+      setPelatih((x) => x.filter((y) => y.id !== p.id))
+    );
+  };
   const pulihkanJadwal = (s: Schedule) =>
     aksi(`/api/admin/jadwal/${s.id}`, { method: "PATCH", body: JSON.stringify({ pulihkan: true }) }, () =>
       setJadwal((p) => p.filter((x) => x.id !== s.id))
@@ -69,7 +83,7 @@ function Sampah() {
       <div>
         <h1 className="text-lg font-bold">Sampah</h1>
         <p className="text-xs text-[var(--muted)]">
-          Yang dihapus dari Member dan Jadwal masuk ke sini dulu. Bisa dipulihkan, atau dihapus
+          Yang dihapus dari Member, Pelatih, dan Jadwal masuk ke sini dulu. Bisa dipulihkan, atau dihapus
           permanen (tidak bisa dikembalikan).
         </p>
       </div>
@@ -98,6 +112,32 @@ function Sampah() {
         ))}
         {members.length === 0 && (
           <p className="p-4 text-center text-sm text-[var(--muted)]">Tidak ada member di sampah.</p>
+        )}
+      </section>
+
+      <section className="panel divide-y divide-[var(--line)]">
+        <h2 className="p-4 text-sm font-semibold">Relawan Pelatih ({pelatih.length})</h2>
+        {pelatih.map((p) => (
+          <div key={p.id} className="flex flex-wrap items-center gap-3 p-4 text-sm">
+            <div className="min-w-0">
+              <p className="font-semibold">{p.name}</p>
+              <p className="text-xs text-[var(--muted)]">
+                {p.code} · {p.phone || "tanpa HP"} · dihapus {tgl(p.deletedAt)}
+                {p.deletedBy ? ` oleh ${p.deletedBy}` : ""}
+              </p>
+            </div>
+            <div className="ml-auto flex gap-3 text-xs">
+              <button onClick={() => pulihkanPelatih(p)} className="text-[var(--accent)]">
+                Pulihkan
+              </button>
+              <button onClick={() => permanenPelatih(p)} className="text-[var(--danger)]">
+                Hapus permanen
+              </button>
+            </div>
+          </div>
+        ))}
+        {pelatih.length === 0 && (
+          <p className="p-4 text-center text-sm text-[var(--muted)]">Tidak ada relawan pelatih di sampah.</p>
         )}
       </section>
 

@@ -1,6 +1,12 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { errorResponse, HttpError } from "@/lib/auth";
-import { memberFromDoc, recordAttendance } from "@/lib/data";
+import {
+  cariPelatihByCode,
+  memberFromDoc,
+  pelatihFromDoc,
+  recordAttendance,
+  recordAttendancePelatih,
+} from "@/lib/data";
 import { verifyLinkToken } from "@/lib/token";
 
 export const runtime = "nodejs";
@@ -22,7 +28,23 @@ export async function POST(req: Request, { params }: Ctx) {
     if (!code) throw new HttpError(400, "Kode kartu kosong.");
 
     const hit = await adminDb().collection("members").where("code", "==", code).limit(1).get();
-    if (hit.empty) throw new HttpError(404, `Kartu ${code} tidak terdaftar.`);
+    if (hit.empty) {
+      // Bukan member — mungkin kartu Relawan Pelatih (RP).
+      const rp = await cariPelatihByCode(code);
+      if (!rp) throw new HttpError(404, `Kartu ${code} tidak terdaftar.`);
+      const r = await recordAttendancePelatih({
+        sessionId,
+        pelatihId: rp.id,
+        method: "scan-kartu",
+      });
+      return Response.json({
+        ok: true,
+        alreadyIn: r.alreadyIn,
+        promoted: false,
+        peran: "pelatih",
+        member: pelatihFromDoc(rp),
+      });
+    }
     const memberId = hit.docs[0].id;
 
     const result = await recordAttendance({

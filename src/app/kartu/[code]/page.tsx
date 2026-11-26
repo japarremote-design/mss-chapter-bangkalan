@@ -1,5 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
-import { memberFromDoc } from "@/lib/data";
+import { cariPelatihByCode, memberFromDoc, pelatihFromDoc } from "@/lib/data";
 import { CardQr } from "./CardQr";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,10 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
     .limit(1)
     .get();
 
-  if (snap.empty || snap.docs[0].get("deletedAt")) {
+  const memberAda = !snap.empty && !snap.docs[0].get("deletedAt");
+  const rpDoc = memberAda ? null : await cariPelatihByCode(decodeURIComponent(code).toUpperCase());
+
+  if (!memberAda && !rpDoc) {
     return (
       <main className="mx-auto flex min-h-screen max-w-sm items-center justify-center px-5">
         <p className="text-sm text-[var(--muted)]">Kartu tidak ditemukan.</p>
@@ -20,7 +23,8 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
     );
   }
 
-  const member = memberFromDoc(snap.docs[0]);
+  const rp = rpDoc ? pelatihFromDoc(rpDoc) : null;
+  const member = rp ?? memberFromDoc(snap.docs[0]);
 
   return (
     <main className="mx-auto max-w-sm px-5 py-10">
@@ -32,9 +36,11 @@ export default async function KartuPage({ params }: { params: Promise<{ code: st
         </p>
         <h1 className="mt-2 text-xl font-bold">{member.name}</h1>
         <span
-          className={`badge mt-2 ${member.status === "member" ? "badge-member" : "badge-calon"}`}
+          className={`badge mt-2 ${
+            rp || (member as { status?: string }).status === "member" ? "badge-member" : "badge-calon"
+          }`}
         >
-          {member.status === "member" ? "MEMBER" : "CALON MEMBER"}
+          {rp ? "RELAWAN PELATIH" : (member as { status?: string }).status === "member" ? "MEMBER" : "CALON MEMBER"}
         </span>
 
         <div className="mt-5 flex justify-center">
