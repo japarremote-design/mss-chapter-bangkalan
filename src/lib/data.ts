@@ -90,9 +90,11 @@ export function pelatihFromDoc(
     city: d.city ?? "",
     province: d.province ?? "",
     tftSudah: d.tftSudah ?? "",
-    tftTahun: d.tftTahun ?? "",
-    tftLevel: d.tftLevel ?? "",
-    tftBatch: d.tftBatch ?? "",
+    tft: Array.isArray(d.tft)
+      ? d.tft
+      : d.tftTahun
+        ? [{ tahun: d.tftTahun, level: d.tftLevel ?? "", batch: d.tftBatch ?? "" }]
+        : [],
     tftInfo: d.tftInfo ?? "",
     note: d.note ?? "",
     source: d.source ?? "",

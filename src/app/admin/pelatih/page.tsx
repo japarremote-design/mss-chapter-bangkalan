@@ -108,7 +108,7 @@ function Daftar() {
             <tr className="border-b border-[var(--line)]">
               <th className="px-4 py-2.5">Nama</th>
               <th className="px-4 py-2.5">Kode</th>
-              <th className="px-4 py-2.5">TFT (tahun · level · batch)</th>
+              <th className="px-4 py-2.5">Riwayat TFT</th>
               <th className="px-4 py-2.5">Hadir</th>
               <th className="px-4 py-2.5 text-right"> </th>
             </tr>
@@ -154,9 +154,17 @@ function Daftar() {
                         <Baris label="Kecamatan" value={p.district} />
                         <Baris label="Kabupaten/Kota" value={p.city} />
                         <Baris label="Provinsi" value={p.province} />
-                        <Baris label="Tahun TFT" value={p.tftTahun} />
-                        <Baris label="Level TFT" value={p.tftLevel} />
-                        <Baris label="Batch TFT" value={p.tftBatch} />
+                        {p.tft.length === 0 ? (
+                          <Baris label="Riwayat TFT" value={p.tftInfo} />
+                        ) : (
+                          p.tft.map((t, i) => (
+                            <Baris
+                              key={i}
+                              label={`TFT Level ${t.level}`}
+                              value={`Tahun ${t.tahun} · Batch ${t.batch}`}
+                            />
+                          ))
+                        )}
                         <Baris label="Terdaftar" value={p.createdAt ? new Date(p.createdAt).toLocaleDateString("id-ID") : ""} />
                       </dl>
                     </td>

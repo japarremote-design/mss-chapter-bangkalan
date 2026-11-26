@@ -38,12 +38,25 @@ export async function POST(req: Request) {
     if (teks(body.tftSudah) !== "Ya") {
       throw new HttpError(400, "Relawan pelatih harus sudah mengikuti TFT.");
     }
-    const tahun = teks(body.tftTahun);
-    const level = teks(body.tftLevel);
-    const batch = teks(body.tftBatch);
-    if (!/^\d{4}$/.test(tahun)) throw new HttpError(400, "Pilih tahun TFT.");
-    if (!["1", "2", "3", "4", "5"].includes(level)) throw new HttpError(400, "Pilih level TFT (1 sampai 5).");
-    if (!/^\d{1,3}$/.test(batch)) throw new HttpError(400, "Isi batch TFT dengan angka.");
+    const mentah = Array.isArray(body.tft) ? body.tft : [];
+    if (mentah.length === 0 || mentah.length > 10) {
+      throw new HttpError(400, "Isi riwayat TFT (tahun, level, batch).");
+    }
+    const tft = mentah.map((r: Record<string, unknown>) => ({
+      tahun: teks(r.tahun),
+      level: teks(r.level),
+      batch: teks(r.batch),
+    }));
+    for (const r of tft) {
+      if (!/^\d{4}$/.test(r.tahun)) throw new HttpError(400, "Pilih tahun TFT.");
+      if (!["1", "2", "3", "4", "5"].includes(r.level)) {
+        throw new HttpError(400, "Pilih level TFT (1 sampai 5).");
+      }
+      if (!/^\d{1,3}$/.test(r.batch)) throw new HttpError(400, "Isi batch TFT dengan angka.");
+    }
+    tft.sort((a: { level: string; tahun: string }, b: { level: string; tahun: string }) =>
+      a.level.localeCompare(b.level) || a.tahun.localeCompare(b.tahun)
+    );
 
     const db = adminDb();
     const dup = await db.collection("pelatih").where("phone", "==", phone).limit(1).get();
@@ -72,10 +85,10 @@ export async function POST(req: Request) {
       city: teks(body.city),
       province: teks(body.province),
       tftSudah: "Ya",
-      tftTahun: tahun,
-      tftLevel: level,
-      tftBatch: batch,
-      tftInfo: `${tahun} · Level ${level} · Batch ${batch}`,
+      tft,
+      tftInfo: tft
+        .map((r: { tahun: string; level: string; batch: string }) => `L${r.level} ${r.tahun} B${r.batch}`)
+        .join(", "),
       note: "",
       source: "web-pendataan-rp",
       attendanceCount: 0,

@@ -20,9 +20,6 @@ const KOSONG = {
   job: "",
   maritalStatus: "",
   tftSudah: "",
-  tftTahun: "",
-  tftLevel: "",
-  tftBatch: "",
   phone: "",
 };
 
@@ -43,9 +40,6 @@ const NAMA_FIELD: Record<Field, string> = {
   job: "pekerjaan",
   maritalStatus: "status pernikahan",
   tftSudah: "sudah ikut TFT?",
-  tftTahun: "tahun TFT",
-  tftLevel: "level TFT",
-  tftBatch: "batch TFT",
   phone: "no. WhatsApp",
 };
 
@@ -63,7 +57,7 @@ const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
   {
     judul: "TFT & kontak",
     sub: "Syarat relawan pelatih: sudah ikut TFT.",
-    fields: ["tftSudah", "tftTahun", "tftLevel", "tftBatch", "phone"],
+    fields: ["tftSudah", "phone"],
   },
 ];
 
@@ -79,12 +73,19 @@ export function FormDaftarRp() {
   const [error, setError] = useState("");
   const [sukses, setSukses] = useState<Sukses | null>(null);
 
-  const set = (k: Field, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const [tft, setTft] = useState<TftBaris[]>([{ tahun: "", level: "", batch: "" }]);
 
-  const kurang = useMemo(
-    () => LANGKAH[step].fields.filter((f) => form[f].trim() === "").map((f) => NAMA_FIELD[f]),
-    [form, step]
-  );
+  const set = (k: Field, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const setBaris = (i: number, k: keyof TftBaris, v: string) =>
+    setTft((rows) => rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
+
+  const tftLengkap = tft.every((r) => r.tahun && r.level && /^\d{1,3}$/.test(r.batch));
+
+  const kurang = useMemo(() => {
+    const k = LANGKAH[step].fields.filter((f) => form[f].trim() === "").map((f) => NAMA_FIELD[f]);
+    if (step === 2 && !tftLengkap) k.push("tahun, level, dan batch TFT");
+    return k;
+  }, [form, step, tftLengkap]);
   const terisi = kurang.length === 0;
 
   const progres = useMemo(() => {
@@ -108,7 +109,7 @@ export function FormDaftarRp() {
       const res = await fetch("/api/public/daftar-rp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, tft }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? data.message ?? "Gagal menyimpan data.");
@@ -233,27 +234,50 @@ export function FormDaftarRp() {
                 Relawan pelatih wajib sudah mengikuti TFT.
               </p>
             )}
-            <div className="grid gap-5 sm:grid-cols-3">
-              <Pilih
-                label="Tahun"
-                value={form.tftTahun}
-                onChange={(v) => set("tftTahun", v)}
-                options={TAHUN_TFT}
-              />
-              <Pilih
-                label="Level"
-                value={form.tftLevel}
-                onChange={(v) => set("tftLevel", v)}
-                options={["1", "2", "3", "4", "5"]}
-              />
-              <Teks
-                label="Batch"
-                value={form.tftBatch}
-                onChange={(v) => set("tftBatch", v)}
-                type="number"
-                inputMode="numeric"
-                placeholder="mis. 3"
-              />
+            <div className="space-y-3">
+              <p className="label">Riwayat TFT (catat semua level yang sudah diikuti)</p>
+              {tft.map((r, i) => (
+                <div key={i} className="rounded-xl border border-[var(--line)] p-3">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Pilih
+                      label="Tahun"
+                      value={r.tahun}
+                      onChange={(v) => setBaris(i, "tahun", v)}
+                      options={TAHUN_TFT}
+                    />
+                    <Pilih
+                      label="Level"
+                      value={r.level}
+                      onChange={(v) => setBaris(i, "level", v)}
+                      options={["1", "2", "3", "4", "5"]}
+                    />
+                    <Teks
+                      label="Batch"
+                      value={r.batch}
+                      onChange={(v) => setBaris(i, "batch", v)}
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="mis. 3"
+                    />
+                  </div>
+                  {tft.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setTft((rows) => rows.filter((_, j) => j !== i))}
+                      className="mt-2 text-xs text-[var(--muted)] hover:text-[var(--danger)]"
+                    >
+                      Hapus baris ini
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setTft((rows) => [...rows, { tahun: "", level: "", batch: "" }])}
+                className="btn btn-ghost w-full text-sm"
+              >
+                + Tambah level TFT lain
+              </button>
             </div>
             <Teks
               label="No. WhatsApp aktif"
@@ -330,6 +354,8 @@ function Selesai({ sukses }: { sukses: Sukses }) {
 }
 
 /** Tahun TFT dinamis: dari tahun berjalan mundur ke 2015, ikut bertambah tiap tahun. */
+type TftBaris = { tahun: string; level: string; batch: string };
+
 const TAHUN_TFT = Array.from(
   { length: Math.max(new Date().getFullYear() - 2015 + 1, 1) },
   (_, i) => String(new Date().getFullYear() - i)

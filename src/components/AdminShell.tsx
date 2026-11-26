@@ -10,7 +10,7 @@ const NAV = [
   { href: "/admin/sesi", label: "Sesi Latihan" },
   { href: "/admin/verifikasi", label: "Verifikasi" },
   { href: "/admin/member", label: "Member" },
-  { href: "/admin/pelatih", label: "Pelatih" },
+  { href: "/admin/pelatih", label: "Relawan" },
   { href: "/admin/jadwal", label: "Jadwal" },
   { href: "/admin/pusat", label: "MSS Pusat" },
   { href: "/admin/sampah", label: "Sampah" },
