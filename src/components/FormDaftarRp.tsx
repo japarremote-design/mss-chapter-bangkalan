@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ADMIN_CONTACTS, waLink } from "@/lib/config";
 import { Qr } from "./Qr";
 
-type Sukses = { code: string; name: string; adminPhone: string };
+type Sukses = { code: string; name: string };
 
 const KOSONG = {
   name: "",
@@ -21,9 +20,10 @@ const KOSONG = {
   job: "",
   maritalStatus: "",
   tftSudah: "",
-  tftInfo: "",
+  tftTahun: "",
+  tftLevel: "",
+  tftBatch: "",
   phone: "",
-  admin: ADMIN_CONTACTS[0]?.phone ?? "",
 };
 
 type Field = keyof typeof KOSONG;
@@ -43,9 +43,10 @@ const NAMA_FIELD: Record<Field, string> = {
   job: "pekerjaan",
   maritalStatus: "status pernikahan",
   tftSudah: "sudah ikut TFT?",
-  tftInfo: "tahun / angkatan TFT",
+  tftTahun: "tahun TFT",
+  tftLevel: "level TFT",
+  tftBatch: "batch TFT",
   phone: "no. WhatsApp",
-  admin: "admin koordinasi",
 };
 
 const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
@@ -62,7 +63,7 @@ const LANGKAH: { judul: string; sub: string; fields: Field[] }[] = [
   {
     judul: "TFT & kontak",
     sub: "Syarat relawan pelatih: sudah ikut TFT.",
-    fields: ["tftSudah", "tftInfo", "phone", "admin"],
+    fields: ["tftSudah", "tftTahun", "tftLevel", "tftBatch", "phone"],
   },
 ];
 
@@ -111,7 +112,7 @@ export function FormDaftarRp() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? data.message ?? "Gagal menyimpan data.");
-      setSukses({ code: data.code, name: form.name, adminPhone: form.admin });
+      setSukses({ code: data.code, name: form.name });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -229,15 +230,31 @@ export function FormDaftarRp() {
             />
             {form.tftSudah === "Belum" && (
               <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-                Relawan pelatih wajib sudah mengikuti TFT. Hubungi admin dulu untuk info jadwal TFT.
+                Relawan pelatih wajib sudah mengikuti TFT.
               </p>
             )}
-            <Teks
-              label="Tahun / angkatan TFT"
-              value={form.tftInfo}
-              onChange={(v) => set("tftInfo", v)}
-              placeholder="mis. 2025, angkatan 3"
-            />
+            <div className="grid gap-5 sm:grid-cols-3">
+              <Pilih
+                label="Tahun"
+                value={form.tftTahun}
+                onChange={(v) => set("tftTahun", v)}
+                options={TAHUN_TFT}
+              />
+              <Pilih
+                label="Level"
+                value={form.tftLevel}
+                onChange={(v) => set("tftLevel", v)}
+                options={["1", "2", "3", "4", "5"]}
+              />
+              <Teks
+                label="Batch"
+                value={form.tftBatch}
+                onChange={(v) => set("tftBatch", v)}
+                type="number"
+                inputMode="numeric"
+                placeholder="mis. 3"
+              />
+            </div>
             <Teks
               label="No. WhatsApp aktif"
               value={form.phone}
@@ -245,23 +262,6 @@ export function FormDaftarRp() {
               inputMode="tel"
               placeholder="08123456xxxx"
             />
-            <div>
-              <label className="label" htmlFor="adm-rp">
-                Pilih admin koordinasi
-              </label>
-              <select
-                id="adm-rp"
-                className="field"
-                value={form.admin}
-                onChange={(e) => set("admin", e.target.value)}
-              >
-                {ADMIN_CONTACTS.map((a) => (
-                  <option key={a.phone} value={a.phone}>
-                    Admin {a.name} ({a.role})
-                  </option>
-                ))}
-              </select>
-            </div>
           </>
         )}
 
@@ -287,7 +287,6 @@ export function FormDaftarRp() {
 }
 
 function Selesai({ sukses }: { sukses: Sukses }) {
-  const pesan = `Assalamualaikum Admin, saya ${sukses.name} (kode ${sukses.code}) sudah mengisi pendataan Relawan Pelatih di website. Mohon konfirmasinya ya, syukron!`;
   return (
     <div className="panel overflow-hidden p-0">
       <div className="bg-gradient-to-br from-[#0f6fb0] to-[#12468f] px-6 py-8 text-center text-white">
@@ -325,15 +324,42 @@ function Selesai({ sukses }: { sukses: Sukses }) {
           </p>
         </div>
 
-        <a
-          href={waLink(sukses.adminPhone, pesan)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-ghost mt-4 w-full"
-        >
-          Konfirmasi ke WhatsApp admin
-        </a>
       </div>
+    </div>
+  );
+}
+
+/** Tahun TFT dinamis: dari tahun berjalan mundur ke 2015, ikut bertambah tiap tahun. */
+const TAHUN_TFT = Array.from(
+  { length: Math.max(new Date().getFullYear() - 2015 + 1, 1) },
+  (_, i) => String(new Date().getFullYear() - i)
+);
+
+function Pilih({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+}) {
+  const id = `rp-pilih-${label.toLowerCase()}`;
+  return (
+    <div>
+      <label className="label" htmlFor={id}>
+        {label}
+      </label>
+      <select id={id} className="field" required value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Pilih…</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

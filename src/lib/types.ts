@@ -115,7 +115,11 @@ export type Pelatih = {
   province: string;
   /** "Ya" = sudah ikut TFT. */
   tftSudah: string;
-  /** Tahun / angkatan TFT. */
+  tftTahun: string;
+  /** 1 sampai 5 */
+  tftLevel: string;
+  tftBatch: string;
+  /** Ringkasan teks: "2025 · Level 2 · Batch 3". */
   tftInfo: string;
   note: string;
   source: string;

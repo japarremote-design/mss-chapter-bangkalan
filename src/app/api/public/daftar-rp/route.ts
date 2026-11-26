@@ -38,14 +38,19 @@ export async function POST(req: Request) {
     if (teks(body.tftSudah) !== "Ya") {
       throw new HttpError(400, "Relawan pelatih harus sudah mengikuti TFT.");
     }
-    if (!teks(body.tftInfo)) throw new HttpError(400, "Isi tahun / angkatan TFT-nya.");
+    const tahun = teks(body.tftTahun);
+    const level = teks(body.tftLevel);
+    const batch = teks(body.tftBatch);
+    if (!/^\d{4}$/.test(tahun)) throw new HttpError(400, "Pilih tahun TFT.");
+    if (!["1", "2", "3", "4", "5"].includes(level)) throw new HttpError(400, "Pilih level TFT (1 sampai 5).");
+    if (!/^\d{1,3}$/.test(batch)) throw new HttpError(400, "Isi batch TFT dengan angka.");
 
     const db = adminDb();
     const dup = await db.collection("pelatih").where("phone", "==", phone).limit(1).get();
     if (!dup.empty) {
       throw new HttpError(
         409,
-        "Nomor ini sudah terdata sebagai relawan pelatih. Hubungi admin kalau datanya perlu dikoreksi."
+        "Nomor ini sudah terdata sebagai relawan pelatih."
       );
     }
 
@@ -67,7 +72,10 @@ export async function POST(req: Request) {
       city: teks(body.city),
       province: teks(body.province),
       tftSudah: "Ya",
-      tftInfo: teks(body.tftInfo),
+      tftTahun: tahun,
+      tftLevel: level,
+      tftBatch: batch,
+      tftInfo: `${tahun} · Level ${level} · Batch ${batch}`,
       note: "",
       source: "web-pendataan-rp",
       attendanceCount: 0,
